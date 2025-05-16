@@ -1,0 +1,26 @@
+ERRORS
+======
+- Message from admin sending functions doesn't log if raised.
+- Bots with not overloaded loggers ain't using app's logger
+
+TODOS
+=====
+- Add picture handling for TelegramBot
+- use normal logger. Take a look at alembic as an example (in alembic.ini configuration)
+- Remake ways to start/stop bots. Using base exception breaks a grpc server
+- Make an integration or an example with celery
+- Use pydantic instead dicts in listeners
+- Add logs everywhere
+- Admin util to get all the user commands
+- Create utils to manage tasks
+
+REFACTORING
+===========
+- Write documentation
+
+TODOS TESTS
+===========
+
+TODOS EXAMPLES
+==============
+- Dependency injection

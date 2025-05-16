@@ -1,0 +1,40 @@
+line-length = 121
+indent-width = 4
+target-version = "py39"
+
+[lint]
+extend-select = [
+#    "ALL",
+    "F",
+    "I",
+    "ASYNC",
+    "W",
+    "E",
+    "UP",
+    "ANN",
+    "T20",
+]
+
+ignore = [
+    # annotate `__init__` ???????
+    "ANN204",
+    # annotate *args :/
+    "ANN002",
+    # annotate **kwargs ...
+    "ANN003",
+    # single quota demand
+    "Q000",
+    # use X | Y, not Optional[X]. But I support python 3.9
+    "UP007",
+    "UP006"
+]
+
+[format]
+indent-style = "space"
+quote-style = "single"
+
+[lint.per-file-ignores]
+"__init__.py" = ["F403", "I001"]
+"**/{tests,examples}/*" = ["ANN", "T201"]
+
+#"**/{alembic}/*" = ["ALL"]
