@@ -28,7 +28,7 @@ class CompiledChatCommand:
         self.blacklist_users = blacklist_users
 
 
-type Trie = dict[str, Union[Trie, CompiledChatCommand]]
+Trie = dict[str, Union["Trie", "CompiledChatCommand"]]
 
 
 def insert_trie(trie: Trie, word: str, command: CompiledChatCommand) -> None:
