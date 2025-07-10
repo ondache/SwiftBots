@@ -46,7 +46,7 @@ class TestChatBot:
         async def listen_async():
             while True:
                 await asyncio.sleep(0)
-                test_value = 'Command 1  unique message'
+                test_value = 'Command 1  Unique message'
                 sender = 'Hund'
                 yield {
                     "message": test_value,
@@ -58,7 +58,7 @@ class TestChatBot:
         app.run()
 
         global global_dict
-        assert global_dict['answer1'] == 'unique message from command handler 1'
+        assert global_dict['answer1'] == 'Unique message from command handler 1'
         assert global_dict['user1'] == 'Hund'
 
     @pytest.mark.timeout(3)
