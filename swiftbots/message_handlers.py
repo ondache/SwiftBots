@@ -43,9 +43,7 @@ def search_trie(trie: Trie, word: str) -> Optional[Trie]:
     """
     for ch in word:
         trie = trie.get(ch)
-        if trie is None:
-            return None
-        if FINAL_INDICATOR in trie:
+        if trie is None or FINAL_INDICATOR in trie:
             return trie
     return None
 
