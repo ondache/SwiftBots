@@ -53,9 +53,9 @@ def search_trie(trie: Trie, word: str) -> Optional[Trie]:
 def search_best_command_match(trie: Trie, word: str) -> tuple[Optional[CompiledChatCommand], Optional[re.Match]]:
     matches = []
     sub_word = word
-    while trie:
+    while trie is not None:
         trie = search_trie(trie, sub_word)
-        if trie:
+        if trie is not None:
             command: CompiledChatCommand = trie[FINAL_INDICATOR]
             matches.append(command)
             sub_word = word[len(command.command_name):]
