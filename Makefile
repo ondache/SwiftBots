@@ -16,5 +16,6 @@ check:
 	uv run mypy --no-pretty
 
 build:
-	uv build --quiet
+	uv sync --quiet
 	uv export -o pylock.toml --quiet
+	uv build --quiet
