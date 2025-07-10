@@ -69,7 +69,7 @@ class TestChatBot:
         async def listen_async():
             while True:
                 await asyncio.sleep(0)
-                test_value = 'Unknown command'
+                test_value = 'Not matching command'
                 sender = 'Pferd'
                 yield {
                     "message": test_value,
@@ -81,5 +81,5 @@ class TestChatBot:
         app.run()
 
         global global_dict
-        assert global_dict['answer1'] == 'Unknown command from default handler'
+        assert global_dict['answer1'] == 'Not matching command from default handler'
         assert global_dict['user1'] == 'Pferd'

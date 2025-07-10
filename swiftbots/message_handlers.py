@@ -49,7 +49,10 @@ def search_trie(trie: Trie, word: str) -> Optional[Trie]:
 
 
 def search_best_command_match(trie: Trie, word: str) -> tuple[Optional[CompiledChatCommand], Optional[re.Match]]:
-    matches = []
+    if FINAL_INDICATOR in trie:
+        matches = [trie[FINAL_INDICATOR]]
+    else:
+        matches = []
     sub_word = word
     while trie is not None:
         trie = search_trie(trie, sub_word.lower())
@@ -85,6 +88,8 @@ def compile_command_as_regex(name: str) -> re.Pattern:
     3. Then the rest of the text (let's name it arguments). Marks as group 1.
     Group 1 is optional. If there is empty group 1, then the message is entirely match the command
     """
+    if len(name) == 0:
+        return re.compile(r"^(.*)$", re.DOTALL)
     escaped_name = re.escape(name)
     return re.compile(rf"^{escaped_name}(?:\s+(.*))?$", re.IGNORECASE | re.DOTALL)
 
@@ -122,7 +127,6 @@ def handle_message(
         message: str,
         chat: 'Chat',
         trie: Trie,
-        default_handler_func: Optional[DecoratedCallable],
         all_deps: dict[str, Any]
 ) -> Coroutine:
     best_matched_command, match = search_best_command_match(trie, message)
@@ -149,15 +153,5 @@ def handle_message(
         all_deps['message'] = arguments
         args = resolve_function_args(method, all_deps)
         return method(**args)
-
-    elif default_handler_func is not None:  # No matches. Use default handler
-        method = default_handler_func
-        all_deps['raw_message'] = message
-        all_deps['arguments'] = message
-        all_deps['args'] = message
-        all_deps['command'] = ''
-        args = resolve_function_args(method, all_deps)
-        return method(**args)
-
-    else:  # No matches and default handler. Send `unknown message`
+    else:  # No matches. Send `unknown message`
         return chat.unknown_command_async()

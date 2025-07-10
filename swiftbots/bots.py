@@ -157,7 +157,6 @@ class ChatBot(Bot):
     Chat = TypeVar('Chat', bound=Chat)
     _sender_func: AsyncSenderFunction
     _compiled_chat_commands: list[CompiledChatCommand]
-    _default_handler_func: Optional[DecoratedCallable] = None
     _message_handlers: list[ChatMessageHandler]
     _admin: Optional[str] = None
     _trie: Trie
@@ -224,15 +223,19 @@ class ChatBot(Bot):
 
         return wrapper
 
-    def default_handler(self) -> DecoratedCallable:
-        def wrapper(func: DecoratedCallable) -> ChatMessageHandler:
-            self._default_handler_func = func
-            return func
-
-        return wrapper
+    def default_handler(
+            self,
+            admin_only: bool = False,
+            whitelist_users: Optional[list[Union[str, int]]] = None,
+            blacklist_users: Optional[list[Union[str, int]]] = None) -> DecoratedCallable:
+        return self.message_handler(
+            commands=[''],
+            admin_only=admin_only,
+            whitelist_users=whitelist_users,
+            blacklist_users=blacklist_users)
 
     def overridden_handler(self, message: str, chat: Chat, all_deps: dict[str, Any]) -> Coroutine:
-        return handle_message(message, chat, self._trie, self._default_handler_func, all_deps)
+        return handle_message(message, chat, self._trie, all_deps)
 
     async def before_start_async(self) -> None:
         await super().before_start_async()
