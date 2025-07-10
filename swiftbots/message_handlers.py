@@ -52,14 +52,14 @@ def search_best_command_match(trie: Trie, word: str) -> tuple[Optional[CompiledC
     matches = []
     sub_word = word
     while trie is not None:
-        trie = search_trie(trie, sub_word)
+        trie = search_trie(trie, sub_word.lower())
         if trie is not None:
             command: CompiledChatCommand = trie[FINAL_INDICATOR]
             matches.append(command)
             sub_word = word[len(command.command_name):]
     for command in reversed(matches):
         match = command.pattern.fullmatch(word)
-        if match:
+        if match is not None:
             return command, match
     return None, None
 
@@ -125,7 +125,7 @@ def handle_message(
         default_handler_func: Optional[DecoratedCallable],
         all_deps: dict[str, Any]
 ) -> Coroutine:
-    best_matched_command, match = search_best_command_match(trie, message.lower())
+    best_matched_command, match = search_best_command_match(trie, message)
 
     if best_matched_command and not is_user_allowed(chat.sender, best_matched_command.whitelist_users, best_matched_command.blacklist_users):
         return chat.refuse_async()
