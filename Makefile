@@ -1,19 +1,19 @@
 test:
-	pytest --stepwise --quiet --no-header --color=yes --code-highlight=yes tests
+	uv run pytest --stepwise --quiet --no-header --color=yes --code-highlight=yes tests
 
-lint:
-	ruff check .
+ruff:
+	uv run ruff check .
 
-type:
-	mypy
+mypy:
+	uv run mypy
+
+black:
+	uv run black --check -t py39 --diff --color .
 
 check:
-	ruff check --statistics --exit-zero .
-	pytest --stepwise-skip --quiet --no-header --no-summary --color=yes --code-highlight=yes tests
-	mypy --no-pretty
-
-blac:
-	black --check -t py39 --diff --color .
+	uv run ruff check --statistics --exit-zero .
+	uv run pytest --stepwise-skip --quiet --no-header --no-summary --color=yes --code-highlight=yes tests
+	uv run mypy --no-pretty
 
 build:
 	uv build --quiet
