@@ -1,3 +1,4 @@
+import sys
 import asyncio
 from traceback import format_exc
 from typing import Any
@@ -99,7 +100,7 @@ async def start_async_loop(app_container: AppContainer) -> None:
             await app_container.logger.report_async("Bots application's closed. The reason is no bots launched now.")
             for bot_to_close in bots:
                 await bot_to_close.before_close_async()
-            return
+            sys.exit(1)
         done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         for task in done:
             name = task.get_name()
@@ -162,7 +163,7 @@ async def start_async_loop(app_container: AppContainer) -> None:
                 for bot_to_close in bots:
                         await bot_to_close.before_close_async()
                 await logger.report_async("Bots application's closed")
-                return
+                sys.exit(0)
 
 
 def run_async(container: AppContainer) -> None:
