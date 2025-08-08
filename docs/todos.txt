@@ -13,6 +13,7 @@ TODOS
 - Add logs everywhere
 - Admin util to get all the user commands
 - Create utils to manage tasks
+- Remove ILogger and its implementations
 
 REFACTORING
 ===========
