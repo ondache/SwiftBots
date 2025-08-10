@@ -235,7 +235,7 @@ class ChatBot(Bot):
             blacklist_users=blacklist_users)
 
     def overridden_handler(self, message: str, chat: Chat, all_deps: dict[str, Any]) -> Coroutine:
-        return handle_message(message, chat, self._trie, all_deps)
+        return handle_message(message, chat, self._trie, all_deps, self)
 
     async def before_start_async(self) -> None:
         await super().before_start_async()

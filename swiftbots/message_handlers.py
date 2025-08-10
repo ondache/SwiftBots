@@ -7,6 +7,7 @@ from swiftbots.types import DecoratedCallable
 
 if TYPE_CHECKING:
     from swiftbots.chats import Chat
+    from swiftbots.bots import ChatBot
 
 
 FINAL_INDICATOR = '**'
@@ -127,7 +128,8 @@ def handle_message(
         message: str,
         chat: 'Chat',
         trie: Trie,
-        all_deps: dict[str, Any]
+        all_deps: dict[str, Any],
+        bot: 'ChatBot'
 ) -> Coroutine:
     best_matched_command, match = search_best_command_match(trie, message)
 
@@ -151,6 +153,7 @@ def handle_message(
         all_deps['args'] = arguments
         all_deps['command'] = command_name
         all_deps['message'] = arguments
+        all_deps['bot'] = bot
         args = resolve_function_args(method, all_deps)
         return method(**args)
     else:  # No matches. Send `unknown message`
