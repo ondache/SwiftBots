@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "swiftbots"
-version = "0.1.4"
+version = "0.1.5"
 description = "Python asynchronous framework for rapid any-level bots development"
 readme = "docs/README.md"
 requires-python = ">=3.9.0"
@@ -15,19 +15,7 @@ dependencies = [
 [project.optional-dependencies]
 standard = []
 
-grpc = [
-    "grpcio>=0.0.0",
-]
-
-sqlalchemy = [
-    "sqlalchemy>=0.0.0"
-]
-
-alembic = [
-    "alembic>=0.0.0"
-]
-
-all = [
+examples = [
     "grpcio>=0.0.0",
     "sqlalchemy>=0.0.0",
     "alembic>=0.0.0"
@@ -36,8 +24,11 @@ all = [
 [dependency-groups]
 dev = [
     "aiosqlite>=0.21.0",
+    "artifacts-keyring>=0.4.0",
+    "azure-functions>=1.23.0",
     "black>=25.1.0",
     "grpcio-tools>=1.71.0",
+    "keyring>=25.6.0",
     "mypy>=1.15.0",
     "pytest>=8.2.2",
     "pytest-timeout>=2.3.1",
