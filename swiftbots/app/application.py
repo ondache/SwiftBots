@@ -12,18 +12,20 @@ from swiftbots.tasks.schedulers import SimpleScheduler
 class SwiftBots:
     def __init__(self,
                  logger_factory: Optional[ILoggerFactory] = None,
+                 run_with: Optional[dict[str, Any]] = None,
                  scheduler: Optional[IScheduler] = None,
-                 runner: Optional[Callable[[AppContainer], Any]] = None
+                 runner: Optional[Callable[[AppContainer, dict[str, Any]], Any]] = None,
                  ):
         assert logger_factory is None or isinstance(
             logger_factory, ILoggerFactory
         ), "Logger factory must be of type ILoggerFactory"
 
+        self.run_with: dict[str, Any] = run_with or dict()
         self.__bots: dict[str, Bot] = {}
         self.__logger_factory: ILoggerFactory = logger_factory or SysIOLoggerFactory()
         self.__logger: ILogger = self.__logger_factory.get_logger()
         self.__scheduler: IScheduler = scheduler or SimpleScheduler()
-        self.__runner: Callable[[AppContainer], Any] = runner or run_async
+        self.__runner: Callable[[AppContainer, dict[str, Any]], Any] = runner or run_async
 
     def add_bot(self, bot: Bot) -> None:
         assert isinstance(bot, Bot), "Bot must be of type Bot or an inherited class"
@@ -55,9 +57,21 @@ class SwiftBots:
             self.__logger.critical("No bots used")
             return
 
+        app_container = self._get_app_container()
+        self.__runner(app_container, self.run_with)
+
+    def run_oneshot(self) -> None:
+        if len(self.__bots) != 1:
+            self.__logger.critical("Only 1 bot allowed for oneshot mode")
+            return
+        app_container = self._get_app_container()
+        self.__runner(app_container, self.run_with)
+
+    def _get_app_container(self) -> AppContainer:
+        assert len(self.__bots) > 0, "No bots used"
+
         bots = list(self.__bots.values())
 
         build_scheduler(bots, self.__scheduler)
         app_container = AppContainer(bots, self.__logger, self.__scheduler)
-
-        self.__runner(app_container)
+        return app_container

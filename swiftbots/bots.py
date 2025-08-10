@@ -37,6 +37,7 @@ class Bot:
     This bot can only have a listener, a handler or tasks"""
     listener_func: AsyncListenerFunction
     handler_func: DecoratedCallable
+    oneshot_extractor_func: DecoratedCallable
 
     def __init__(
             self,
@@ -73,6 +74,13 @@ class Bot:
     def listener(self) -> Callable[[DecoratedCallable], DecoratedCallable]:
         def wrapper(func: DecoratedCallable) -> DecoratedCallable:
             self.listener_func = func
+            return func
+
+        return wrapper
+
+    def oneshot_extractor(self) -> Callable[[DecoratedCallable], DecoratedCallable]:
+        def wrapper(func: DecoratedCallable) -> DecoratedCallable:
+            self.oneshot_extractor = func
             return func
 
         return wrapper
@@ -274,6 +282,7 @@ class TelegramBot(ChatBot):
         self._sender_func = self._send_async
         self.__should_skip_old_updates = skip_old_updates
         self.listener_func = self.telegram_listener
+        self.oneshot_extractor_func = self.telegram_response_extractor
 
         def handler(message: str,
                     sender: Union[str, int],
@@ -338,14 +347,17 @@ class TelegramBot(ChatBot):
 
             try:
                 async for update in self._get_updates_async():
-                    data = await self._deconstruct_message_async(update)
+                    data = self.telegram_response_extractor(update)
                     if data:
                         yield data
 
             except httpx.ConnectError:
                 await self._handle_server_connection_error_async()
 
-    async def _deconstruct_message_async(self, update: dict) -> Union[dict, None]:
+    def telegram_response_extractor(self, message: dict) -> Union[dict, None]:
+        return self._deconstruct_message(message)
+
+    def _deconstruct_message(self, update: dict) -> Union[dict, None]:
         """
         https://core.telegram.org/bots/api#message
         """
@@ -364,7 +376,7 @@ class TelegramBot(ChatBot):
                 text = message["text"]
             if "photo" in message:
                 photo = message["photo"][-1]["file_id"]
-            await self.logger.info_async(
+            self.logger.info(
                 f"Came message {'with photo' + photo if photo else ''} from '{sender}' ({username}): '{text}'"
             )
             if text or photo:
@@ -376,7 +388,7 @@ class TelegramBot(ChatBot):
                     "username": username,
                     "raw_update": update
                 }
-        await self.logger.error_async("Unknown message type:\n" + str(update))
+        self.logger.error("Unknown message type:\n" + str(update))
         return None
 
     async def _handle_server_connection_error_async(self) -> None:

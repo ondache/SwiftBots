@@ -72,7 +72,7 @@ async def start_bot(bot: Bot, scheduler: IScheduler) -> None:
     await start_async_listener(bot)
 
 
-async def start_async_loop(app_container: AppContainer) -> None:
+async def start_async_loop(app_container: AppContainer, run_with: dict[str, Any]) -> None:
     bots = app_container.bots
     for bot in bots:
         await bot.before_start_async()
@@ -166,5 +166,17 @@ async def start_async_loop(app_container: AppContainer) -> None:
                 sys.exit(0)
 
 
-def run_async(container: AppContainer) -> None:
-    asyncio.run(start_async_loop(container))
+def run_async(container: AppContainer, run_with: dict[str, Any]) -> None:
+    asyncio.run(start_async_loop(container, run_with))
+
+
+async def start_oneshot(app_container: AppContainer, run_with: dict[str, Any]):
+    assert len(app_container.bots) == 1, "Oneshot mode supports only one bot"
+    bot = app_container.bots[0]
+    await bot.before_start_async()
+    bot.oneshot_extractor_func()
+
+
+def run_oneshot(container: AppContainer, run_with: dict[str, Any]) -> None:
+    assert 'message' in run_with, "Oneshot mode requires 'message' in run_with"
+    asyncio.run(start_oneshot(container, run_with))
