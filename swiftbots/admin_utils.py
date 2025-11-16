@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any, Optional
+from textwrap import wrap
 
 import httpx
 
@@ -74,8 +75,7 @@ async def send_telegram_message_async(
 
     is_traceback = "Traceback" in message and "parse_mode" not in data
     async with httpx.AsyncClient() as session:
-        messages = [message[i : i + 4096] for i in range(0, len(message), 4096)]
-        for msg in messages:
+        for msg in wrap(message, 4096):
             send_data = {
                 "chat_id": admin,
                 "text": f"```\n{msg}\n```" if is_traceback else msg,
@@ -94,8 +94,7 @@ def send_telegram_message(
     if data is None:
         data = {}
     is_traceback = "Traceback" in message and "parse_mode" not in data
-    messages = [message[i : i + 4096] for i in range(0, len(message), 4096)]
-    for msg in messages:
+    for msg in wrap(message, 4096):
         send_data = {
             "chat_id": admin,
             "text": f"```\n{msg}\n```" if is_traceback else msg,
