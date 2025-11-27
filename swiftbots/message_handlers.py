@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 from swiftbots.functions import resolve_function_args
 from swiftbots.types import DecoratedCallable
+from swiftbots.c_ext import search_ext
 
 if TYPE_CHECKING:
     from swiftbots.chats import Chat
@@ -38,17 +39,6 @@ def insert_trie(trie: Trie, word: str, command: CompiledChatCommand) -> None:
     trie[FINAL_INDICATOR] = command
 
 
-def search_trie(trie: Trie, word: str) -> Optional[Trie]:
-    """
-    Searches the first full command match in the trie.
-    """
-    for ch in word:
-        trie = trie.get(ch)
-        if trie is None or FINAL_INDICATOR in trie:
-            return trie
-    return None
-
-
 def search_best_command_match(trie: Trie, word: str) -> tuple[Optional[CompiledChatCommand], Optional[re.Match]]:
     if FINAL_INDICATOR in trie:
         matches = [trie[FINAL_INDICATOR]]
@@ -56,7 +46,7 @@ def search_best_command_match(trie: Trie, word: str) -> tuple[Optional[CompiledC
         matches = []
     sub_word = word
     while trie is not None:
-        trie = search_trie(trie, sub_word.lower())
+        trie = search_ext.search_trie(trie, sub_word.lower())
         if trie is not None:
             command: CompiledChatCommand = trie[FINAL_INDICATOR]
             matches.append(command)
