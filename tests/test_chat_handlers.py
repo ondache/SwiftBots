@@ -23,6 +23,7 @@ class TestChatHandlers:
         insert("apple", 1)
         insert("cranberry", 2)
         insert("apple cranberry", 3)
+        insert("苹果", 4)
 
         assert try_on(trie, "apple") == 1
         assert try_on(trie, "cranberry") == 2
@@ -35,3 +36,4 @@ class TestChatHandlers:
         assert try_on(trie, "cherry") is None
         assert try_on(trie, "cherry apple") is None
         assert try_on(trie, "pple") is None
+        assert try_on(trie, "苹果") == 4
