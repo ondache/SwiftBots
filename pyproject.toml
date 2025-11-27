@@ -14,7 +14,8 @@ standard = []
 examples = [
     "grpcio>=0.0.0",
     "sqlalchemy>=0.0.0",
-    "alembic>=0.0.0"
+    "alembic>=0.0.0",
+    "grpcio-tools>=1.71.0",
 ]
 
 [dependency-groups]
@@ -23,7 +24,6 @@ dev = [
     "artifacts-keyring>=0.4.0",
     "azure-functions>=1.23.0",
     "black>=25.1.0",
-    "grpcio-tools>=1.71.0",
     "keyring>=25.6.0",
     "mypy>=1.15.0",
     "pytest>=8.2.2",

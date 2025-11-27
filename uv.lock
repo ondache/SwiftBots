@@ -1165,6 +1165,7 @@ dependencies = [
 examples = [
     { name = "alembic" },
     { name = "grpcio" },
+    { name = "grpcio-tools" },
     { name = "sqlalchemy" },
 ]
 
@@ -1174,7 +1175,6 @@ dev = [
     { name = "artifacts-keyring" },
     { name = "azure-functions" },
     { name = "black" },
-    { name = "grpcio-tools" },
     { name = "keyring" },
     { name = "mypy" },
     { name = "pytest" },
@@ -1187,6 +1187,7 @@ dev = [
 requires-dist = [
     { name = "alembic", marker = "extra == 'examples'", specifier = ">=0.0.0" },
     { name = "grpcio", marker = "extra == 'examples'", specifier = ">=0.0.0" },
+    { name = "grpcio-tools", marker = "extra == 'examples'", specifier = ">=1.71.0" },
     { name = "httpx", specifier = ">=0.0.0" },
     { name = "sqlalchemy", marker = "extra == 'examples'", specifier = ">=0.0.0" },
 ]
@@ -1198,7 +1199,6 @@ dev = [
     { name = "artifacts-keyring", specifier = ">=0.4.0" },
     { name = "azure-functions", specifier = ">=1.23.0" },
     { name = "black", specifier = ">=25.1.0" },
-    { name = "grpcio-tools", specifier = ">=1.71.0" },
     { name = "keyring", specifier = ">=25.6.0" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "pytest", specifier = ">=8.2.2" },
