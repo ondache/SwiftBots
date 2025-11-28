@@ -3,7 +3,8 @@ import asyncio
 import pytest
 
 from swiftbots import Bot, StubBot, SwiftBots
-from swiftbots.admin_utils import get_bot_names_async, shutdown_app, shutdown_bot_async, start_bot_async
+from swiftbots.admin_utils import get_bot_names_async, shutdown_bot_async, start_bot_async
+from tests.common import close_test_app, run_raisable
 
 STUB_BOT_NAME = 'bot1'
 ADMIN_BOT_NAME = 'admin'
@@ -24,7 +25,7 @@ class TestAdminUtils:
             await shutdown_bot_async(STUB_BOT_NAME)
             nonlocal bots_list
             _, _, bots_list = await get_bot_names_async()
-            shutdown_app()
+            close_test_app()
 
         @bot.listener()
         async def listen():
@@ -37,7 +38,7 @@ class TestAdminUtils:
             StubBot(name=STUB_BOT_NAME)
         ])
 
-        app.run()
+        run_raisable(app)
 
         assert bots_list == {STUB_BOT_NAME}
 
@@ -54,7 +55,7 @@ class TestAdminUtils:
             await asyncio.sleep(0)
             nonlocal bots_list
             bots_list = await get_bot_names_async()
-            shutdown_app()
+            close_test_app()
 
         @bot.listener()
         async def listen():
@@ -67,7 +68,7 @@ class TestAdminUtils:
             StubBot(name=STUB_BOT_NAME, run_at_start=False)
         ])
 
-        app.run()
+        run_raisable(app)
 
         assert bots_list == ({ADMIN_BOT_NAME, STUB_BOT_NAME}, {ADMIN_BOT_NAME}, {STUB_BOT_NAME})
 
@@ -85,7 +86,7 @@ class TestAdminUtils:
             await start_bot_async(STUB_BOT_NAME)
             nonlocal bots_list
             _, bots_list, _ = await get_bot_names_async()
-            shutdown_app()
+            close_test_app()
 
         @bot.listener()
         async def listen():
@@ -98,6 +99,6 @@ class TestAdminUtils:
             StubBot(name=STUB_BOT_NAME, run_at_start=False)
         ])
 
-        app.run()
+        run_raisable(app)
 
         assert bots_list == {ADMIN_BOT_NAME, STUB_BOT_NAME}

@@ -4,6 +4,7 @@ import pytest
 
 from swiftbots import Bot, SwiftBots
 from swiftbots.admin_utils import shutdown_app
+from tests.common import close_test_app, run_raisable
 
 global_dict = {}
 
@@ -16,7 +17,7 @@ async def the_one_handler(value: str):
     await asyncio.sleep(0)
     global global_dict
     global_dict['value'] = value
-    shutdown_app()
+    close_test_app()
 
 
 @bot.listener()
@@ -37,7 +38,7 @@ class TestBasicBot:
 
         app.add_bots([bot])
 
-        app.run()
+        run_raisable(app)
 
         global global_dict
         assert global_dict['value'] == 'Some value'

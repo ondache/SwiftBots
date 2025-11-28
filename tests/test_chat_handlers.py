@@ -1,4 +1,3 @@
-
 import pytest
 
 from swiftbots.message_handlers import (

@@ -3,7 +3,7 @@ import asyncio
 import pytest
 
 from swiftbots import PeriodTrigger, StubBot, SwiftBots, depends
-from swiftbots.admin_utils import shutdown_app
+from tests.common import close_test_app, run_raisable
 
 global_var = 0
 
@@ -13,7 +13,7 @@ class Changer:
         await asyncio.sleep(0)
         global global_var
         global_var = value
-        shutdown_app()
+        close_test_app()
 
 
 class TestTasks:
@@ -30,7 +30,7 @@ class TestTasks:
 
         app.add_bots([bot])
 
-        app.run()
+        run_raisable(app)
 
         global global_var
         assert global_var == 5

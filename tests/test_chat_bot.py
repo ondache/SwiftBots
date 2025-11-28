@@ -3,7 +3,7 @@ import asyncio
 import pytest
 
 from swiftbots import ChatBot, SwiftBots
-from swiftbots.admin_utils import shutdown_app
+from tests.common import close_test_app, run_raisable
 
 global_dict = {}
 
@@ -33,7 +33,7 @@ async def send_async(message, user):
     global global_dict
     global_dict['answer1'] = message
     global_dict['user1'] = user
-    shutdown_app()
+    close_test_app()
 
 
 class TestChatBot:
@@ -55,7 +55,7 @@ class TestChatBot:
 
         app.add_bots([bot])
 
-        app.run()
+        run_raisable(app)
 
         global global_dict
         assert global_dict['answer1'] == 'Unique message from command handler 1'
@@ -78,7 +78,7 @@ class TestChatBot:
 
         app.add_bots([bot])
 
-        app.run()
+        run_raisable(app)
 
         global global_dict
         assert global_dict['answer1'] == 'Not matching command from default handler'
