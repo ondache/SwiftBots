@@ -1,6 +1,5 @@
 from swiftbots import ChatBot
-from swiftbots.admin_utils import get_bot_names_async, shutdown_bot_async, shutdown_app, start_bot_async
-
+from swiftbots.admin_utils import get_bot_names_async, shutdown_app, shutdown_bot_async, start_bot_async
 
 bot = ChatBot(name='admin_bot')
 

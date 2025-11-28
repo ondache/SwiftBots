@@ -1,12 +1,11 @@
 import asyncio
 
-import grpc
-from swiftbots import SwiftBots, Bot, StubBot
-from swiftbots.admin_utils import get_bot_names_async, shutdown_bot_async, start_bot_async
-
-
 import bots_admin_pb2_grpc
-from bots_admin_pb2 import StatusReply, BotNameRequest
+import grpc
+from bots_admin_pb2 import BotNameRequest, StatusReply
+
+from swiftbots import Bot, StubBot, SwiftBots
+from swiftbots.admin_utils import get_bot_names_async, shutdown_bot_async, start_bot_async
 
 
 def input_async(*args, **kwargs):
@@ -53,7 +52,7 @@ grpc_server_bot = StubBot(name='grpc_server_bot')
 class BotsAdminServices(bots_admin_pb2_grpc.BotsAdminServicer):
     async def Ping(self, request: BotNameRequest, context) -> StatusReply:
         existing_bots, running_bots, _ = await get_bot_names_async()
-        if not request.name in existing_bots:
+        if request.name not in existing_bots:
             return StatusReply(status='unknown')
         if request.name in running_bots:
             return StatusReply(status='active')

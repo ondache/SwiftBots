@@ -1,7 +1,6 @@
-from swiftbots import SwiftBots, ChatBot
+from admin_service import ping_bot, start_bot, stop_bot
 
-from admin_service import ping_bot, stop_bot, start_bot
-
+from swiftbots import ChatBot, SwiftBots
 
 app = SwiftBots()
 

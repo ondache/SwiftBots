@@ -1,5 +1,4 @@
-from swiftbots import SwiftBots, Bot
-
+from swiftbots import Bot, SwiftBots
 
 app = SwiftBots()
 

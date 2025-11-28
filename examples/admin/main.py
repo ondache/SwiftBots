@@ -1,7 +1,6 @@
-from swiftbots import SwiftBots, StubBot
-
 import admin_bot
 
+from swiftbots import StubBot, SwiftBots
 
 app = SwiftBots()
 

@@ -1,8 +1,6 @@
-import grpc
-
 import bots_admin_pb2_grpc
-from bots_admin_pb2 import StatusReply, BotNameRequest
-
+import grpc
+from bots_admin_pb2 import BotNameRequest, StatusReply
 
 endpoints = {
     'weather_bot': 'localhost:50051',

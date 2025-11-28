@@ -1,5 +1,5 @@
-import sys
 import asyncio
+import sys
 from traceback import format_exc
 from typing import Any
 

@@ -1,8 +1,8 @@
 import logging
 
-from swiftbots import SwiftBots
-
 from notes_bot import bot
+
+from swiftbots import SwiftBots
 
 # just to not spam
 logging.basicConfig(level=logging.ERROR)

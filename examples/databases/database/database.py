@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-
 db_connection_string="sqlite+aiosqlite:///database/notes.sqlite3"
 engine = create_async_engine(db_connection_string, echo=True)
 session_maker = sessionmaker(engine, autocommit=False, autoflush=False, expire_on_commit=False, class_=AsyncSession)

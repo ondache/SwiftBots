@@ -2,9 +2,8 @@ import asyncio
 
 import pytest
 
-from swiftbots import Bot, SwiftBots, StubBot
-from swiftbots.admin_utils import shutdown_app, shutdown_bot_async, get_bot_names_async, start_bot_async
-
+from swiftbots import Bot, StubBot, SwiftBots
+from swiftbots.admin_utils import get_bot_names_async, shutdown_app, shutdown_bot_async, start_bot_async
 
 STUB_BOT_NAME = 'bot1'
 ADMIN_BOT_NAME = 'admin'

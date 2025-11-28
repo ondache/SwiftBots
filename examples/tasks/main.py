@@ -1,7 +1,7 @@
-import random
 import asyncio
+import random
 
-from swiftbots import SwiftBots, ChatBot, PeriodTrigger
+from swiftbots import ChatBot, PeriodTrigger, SwiftBots
 from swiftbots.admin_utils import shutdown_app
 
 

@@ -1,14 +1,14 @@
-import re
 import asyncio
-from datetime import datetime as dt, timezone
-
-from swiftbots import ChatBot, depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio.session import AsyncSession
+import re
+from datetime import datetime as dt
+from datetime import timezone
 
 from database.database import create_session_async
 from models.notes import Note
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio.session import AsyncSession
 
+from swiftbots import ChatBot, depends
 
 NAME_TEXT_PATTERN = re.compile(r'^(\S+)\s+(\S+.*)$', re.IGNORECASE | re.DOTALL)
 
