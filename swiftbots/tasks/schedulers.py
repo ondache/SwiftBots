@@ -4,8 +4,8 @@ __all__ = [
 
 import asyncio
 import datetime
-from collections.abc import Callable
-from typing import Any, Optional, Iterable
+from collections.abc import Callable, Iterable
+from typing import Any
 
 from swiftbots.all_types import IPeriodTrigger, IScheduler
 from swiftbots.tasks.tasks import TaskInfo
@@ -16,7 +16,7 @@ def now() -> datetime.datetime:
 
 
 class TaskContainer:
-    __last_called: Optional[datetime.datetime] = None
+    __last_called: datetime.datetime | None = None
     __called_once = False
 
     def __init__(self,

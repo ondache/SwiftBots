@@ -1,6 +1,6 @@
 import asyncio
-from typing import Any, Optional
 from textwrap import wrap
+from typing import Any
 
 import httpx
 
@@ -68,7 +68,7 @@ async def start_bot_async(bot_name: str) -> int:
 
 
 async def send_telegram_message_async(
-    message: str, admin: str, token: str, data: Optional[dict[str, Any]] = None
+    message: str, admin: str, token: str, data: dict[str, Any] | None = None
 ) -> None:
     if data is None:
         data = {}
@@ -89,7 +89,7 @@ async def send_telegram_message_async(
 
 
 def send_telegram_message(
-    message: str, admin: str, token: str, data: Optional[dict[str, Any]] = None
+    message: str, admin: str, token: str, data: dict[str, Any] | None = None
 ) -> None:
     if data is None:
         data = {}

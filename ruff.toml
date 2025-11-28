@@ -1,6 +1,6 @@
 line-length = 121
 indent-width = 4
-target-version = "py39"
+target-version = "py310"
 
 [lint]
 extend-select = [
@@ -24,8 +24,6 @@ ignore = [
     "ANN003",
     # single quota demand
     "Q000",
-    # use X | Y, not Optional[X]. But I support python 3.9
-    "UP007",
     "UP006"
 ]
 
@@ -35,6 +33,6 @@ quote-style = "single"
 
 [lint.per-file-ignores]
 "__init__.py" = ["F403", "I001"]
-"**/{tests,examples}/*" = ["ANN", "T201"]
+"**/{tests,examples}/*" = ["ALL"]
 
 #"**/{alembic}/*" = ["ALL"]

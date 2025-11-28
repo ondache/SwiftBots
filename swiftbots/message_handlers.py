@@ -1,14 +1,14 @@
 import re
 from collections.abc import Coroutine
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Union
 
+from swiftbots.c_ext import search_ext
 from swiftbots.functions import resolve_function_args
 from swiftbots.types import DecoratedCallable
-from swiftbots.c_ext import search_ext
 
 if TYPE_CHECKING:
-    from swiftbots.chats import Chat
     from swiftbots.bots import ChatBot
+    from swiftbots.chats import Chat
 
 
 FINAL_INDICATOR = '**'
@@ -20,8 +20,8 @@ class CompiledChatCommand:
         command_name: str,
         method: DecoratedCallable,
         pattern: re.Pattern,
-        whitelist_users: Optional[list[str]],
-        blacklist_users: Optional[list[str]]
+        whitelist_users: list[str] | None,
+        blacklist_users: list[str] | None
     ):
         self.command_name = command_name
         self.method = method
@@ -39,7 +39,7 @@ def insert_trie(trie: Trie, word: str, command: CompiledChatCommand) -> None:
     trie[FINAL_INDICATOR] = command
 
 
-def search_best_command_match(trie: Trie, word: str) -> tuple[Optional[CompiledChatCommand], Optional[re.Match]]:
+def search_best_command_match(trie: Trie, word: str) -> tuple[CompiledChatCommand | None, re.Match | None]:
     if FINAL_INDICATOR in trie:
         matches = [trie[FINAL_INDICATOR]]
     else:
@@ -62,8 +62,8 @@ class ChatMessageHandler:
     def __init__(self,
                  commands: list[str],
                  function: DecoratedCallable,
-                 whitelist_users: Optional[list[Union[str, int]]],
-                 blacklist_users: Optional[list[Union[str, int]]]):
+                 whitelist_users: list[str | int] | None,
+                 blacklist_users: list[str | int] | None):
         self.commands = commands
         self.function = function
         self.whitelist_users = None if whitelist_users is None else [str(x).casefold() for x in whitelist_users]
@@ -102,9 +102,9 @@ def compile_chat_commands(
     return compiled_commands
 
 
-def is_user_allowed(user: Union[str, int],
-                    whitelist_users: Optional[list[str]],
-                    blacklist_users: Optional[list[str]]
+def is_user_allowed(user: str | int,
+                    whitelist_users: list[str] | None,
+                    blacklist_users: list[str] | None
                     ) -> bool:
     user = str(user).casefold()
     if blacklist_users is not None:

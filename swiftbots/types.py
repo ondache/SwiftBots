@@ -1,5 +1,5 @@
 from collections.abc import AsyncGenerator, Callable
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 
 class DependencyContainer:
@@ -8,5 +8,5 @@ class DependencyContainer:
 
 
 DecoratedCallable = TypeVar("DecoratedCallable", bound=Callable[..., Any])
-AsyncSenderFunction = TypeVar("AsyncSenderFunction", bound=Callable[[str, Union[str, int]], Any])
+AsyncSenderFunction = TypeVar("AsyncSenderFunction", bound=Callable[[str, str | int], Any])
 AsyncListenerFunction = TypeVar("AsyncListenerFunction", bound=AsyncGenerator[Any, dict])

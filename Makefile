@@ -8,7 +8,7 @@ mypy:
 	uv run mypy
 
 black:
-	uv run black --check -t py39 --diff --color .
+	uv run black --check -t py310 --diff --color .
 
 check:
 	uv run ruff check --statistics --exit-zero .

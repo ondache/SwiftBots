@@ -1,11 +1,16 @@
-from typing import Optional
 
 import pytest
 
-from swiftbots.message_handlers import compile_command_as_regex, CompiledChatCommand, insert_trie, search_best_command_match, Trie
+from swiftbots.message_handlers import (
+    CompiledChatCommand,
+    Trie,
+    compile_command_as_regex,
+    insert_trie,
+    search_best_command_match,
+)
 
 
-def try_on(trie: Trie, word: str) -> Optional[int]:
+def try_on(trie: Trie, word: str) -> int | None:
     command, match = search_best_command_match(trie, word)
     if command:
         return command.method()

@@ -1,6 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator, Callable, Coroutine
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 import httpx
 
@@ -23,9 +23,9 @@ from swiftbots.loggers import SysIOLoggerFactory
 from swiftbots.message_handlers import (
     ChatMessageHandler,
     CompiledChatCommand,
+    Trie,
     compile_chat_commands,
     handle_message,
-    Trie,
     insert_trie,
 )
 from swiftbots.tasks.tasks import TaskInfo
@@ -40,8 +40,8 @@ class Bot:
 
     def __init__(
             self,
-            name: Optional[str] = None,
-            bot_logger_factory: Optional[ILoggerFactory] = None,
+            name: str | None = None,
+            bot_logger_factory: ILoggerFactory | None = None,
             run_at_start = True
     ):
         assert bot_logger_factory is None or isinstance(
@@ -86,9 +86,9 @@ class Bot:
 
     def task(
             self,
-            triggers: Union[ITrigger, list[ITrigger]],
+            triggers: ITrigger | list[ITrigger],
             run_at_start: bool = False,
-            name: Optional[str] = None
+            name: str | None = None
     ) -> Callable[[DecoratedCallable], TaskInfo]:
         """
         Mark a bot method as a task.
@@ -134,8 +134,8 @@ class StubBot(Bot):
     """
 
     def __init__(self,
-                 name: Optional[str] = None,
-                 bot_logger_factory: Optional[ILoggerFactory] = None,
+                 name: str | None = None,
+                 bot_logger_factory: ILoggerFactory | None = None,
                  run_at_start = True,
                  ):
         super().__init__(name=name, bot_logger_factory=bot_logger_factory, run_at_start=run_at_start)
@@ -158,16 +158,16 @@ class ChatBot(Bot):
     _sender_func: AsyncSenderFunction
     _compiled_chat_commands: list[CompiledChatCommand]
     _message_handlers: list[ChatMessageHandler]
-    _admin: Optional[str] = None
+    _admin: str | None = None
     _trie: Trie
 
     def __init__(self,
-                 name: Optional[str] = None,
-                 bot_logger_factory: Optional[ILoggerFactory] = None,
+                 name: str | None = None,
+                 bot_logger_factory: ILoggerFactory | None = None,
                  chat_error_message: str = "Error occurred",
                  chat_unknown_error_message: str = "Unknown command",
                  chat_refuse_message: str = "Access forbidden",
-                 admin: Optional[Union[int, str]] = None,
+                 admin: int | str | None = None,
                  run_at_start = True,
                  ):
         super().__init__(name=name, bot_logger_factory=bot_logger_factory, run_at_start=run_at_start)
@@ -175,7 +175,7 @@ class ChatBot(Bot):
         self._admin = admin
         self._trie = {}
 
-        def handler(message: str, sender: Union[str, int], all_deps: dict[str, Any]) -> Coroutine:
+        def handler(message: str, sender: str | int, all_deps: dict[str, Any]) -> Coroutine:
             chat = Chat(
                 sender=sender,
                 message=message,
@@ -193,8 +193,8 @@ class ChatBot(Bot):
     def message_handler(self,
                         commands: list[str],
                         admin_only: bool = False,
-                        whitelist_users: Optional[list[Union[str, int]]] = None,
-                        blacklist_users: Optional[list[Union[str, int]]] = None) -> DecoratedCallable:
+                        whitelist_users: list[str | int] | None = None,
+                        blacklist_users: list[str | int] | None = None) -> DecoratedCallable:
         """
         :param commands: commands, that will fire the method. For example: ['add', '+']. Message "add 2 2" will execute in this method.
         :param admin_only: only admin will be able to use this command. If True, whitelist_users list will be ignored.
@@ -226,8 +226,8 @@ class ChatBot(Bot):
     def default_handler(
             self,
             admin_only: bool = False,
-            whitelist_users: Optional[list[Union[str, int]]] = None,
-            blacklist_users: Optional[list[Union[str, int]]] = None) -> DecoratedCallable:
+            whitelist_users: list[str | int] | None = None,
+            blacklist_users: list[str | int] | None = None) -> DecoratedCallable:
         return self.message_handler(
             commands=[''],
             admin_only=admin_only,
@@ -255,9 +255,9 @@ class TelegramBot(ChatBot):
 
     def __init__(self,
                  token: str,
-                 admin: Optional[Union[int, str]] = None,
-                 name: Optional[str] = None,
-                 bot_logger_factory: Optional[ILoggerFactory] = None,
+                 admin: int | str | None = None,
+                 name: str | None = None,
+                 bot_logger_factory: ILoggerFactory | None = None,
                  greeting_enabled: bool = True,
                  skip_old_updates: bool = True,
                  chat_error_message: str = "Error occurred",
@@ -276,10 +276,10 @@ class TelegramBot(ChatBot):
         self.listener_func = self.telegram_listener
 
         def handler(message: str,
-                    sender: Union[str, int],
+                    sender: str | int,
                     all_deps: dict[str, Any],
                     message_id: int,
-                    username: Union[str, None]
+                    username: str | None
                     ) -> Coroutine:
             chat = TelegramChat(
                 sender=sender,
@@ -298,7 +298,7 @@ class TelegramBot(ChatBot):
 
         self.handler_func = handler
 
-    async def _send_async(self, message: str, user: Union[str, int]) -> dict:
+    async def _send_async(self, message: str, user: str | int) -> dict:
         messages = [message[i: i + 4096] for i in range(0, len(message), 4096)]
         result = {}
         for msg in messages:
@@ -310,7 +310,7 @@ class TelegramBot(ChatBot):
             self,
             method: str,
             data: dict,
-            headers: Optional[dict] = None,
+            headers: dict | None = None,
             ignore_errors: bool = False,
             timeout: float = 30.,
     ) -> dict:
@@ -345,7 +345,7 @@ class TelegramBot(ChatBot):
             except httpx.ConnectError:
                 await self._handle_server_connection_error_async()
 
-    async def _deconstruct_message_async(self, update: dict) -> Union[dict, None]:
+    async def _deconstruct_message_async(self, update: dict) -> dict | None:
         """
         https://core.telegram.org/bots/api#message
         """

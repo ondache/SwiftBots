@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from typing import Optional, Union
 
 from swiftbots.all_types import ILogger
 from swiftbots.types import AsyncSenderFunction
@@ -8,7 +7,7 @@ from swiftbots.types import AsyncSenderFunction
 class Chat:
     def __init__(
             self,
-            sender: Union[str, int],
+            sender: str | int,
             message: str,
             function_sender: AsyncSenderFunction,
             logger: ILogger,
@@ -55,12 +54,12 @@ class Chat:
 class TelegramChat(Chat):
     def __init__(
             self,
-            sender: Union[str, int],
+            sender: str | int,
             message: str,
             function_sender: AsyncSenderFunction,
             logger: ILogger,
             message_id: int,
-            username: Union[str, None],
+            username: str | None,
             fetch_async: Callable,
             error_message: str,
             unknown_message: str,
@@ -78,7 +77,7 @@ class TelegramChat(Chat):
         self.fetch_async = fetch_async
 
     async def update_message_async(
-        self, new_text: str, message_id: int, data: Optional[dict] = None
+        self, new_text: str, message_id: int, data: dict | None = None
     ) -> dict:
         if data is None:
             data = {}
@@ -88,7 +87,7 @@ class TelegramChat(Chat):
         return await self.fetch_async("editMessageText", data)
 
     async def send_async(
-        self, message: str, user: Union[str, int], data: Optional[dict] = None
+        self, message: str, user: str | int, data: dict | None = None
     ) -> dict:
         if data is None:
             data = {}
@@ -102,7 +101,7 @@ class TelegramChat(Chat):
         return result
 
     async def delete_message_async(
-        self, message_id: int, data: Optional[dict] = None
+        self, message_id: int, data: dict | None = None
     ) -> dict:
         if data is None:
             data = {}
@@ -111,7 +110,7 @@ class TelegramChat(Chat):
         return await self.fetch_async("deleteMessage", data)
 
     async def send_sticker_async(
-        self, file_id: str, data: Optional[dict] = None
+        self, file_id: str, data: dict | None = None
     ) -> dict:
         if data is None:
             data = {}

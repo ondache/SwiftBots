@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from typing import Optional
 
 
 class ITrigger(ABC):
@@ -8,15 +7,15 @@ class ITrigger(ABC):
 
 
 class IPeriodTrigger(ITrigger, ABC):
-    hours: Optional[float]
-    minutes: Optional[float]
-    seconds: Optional[float]
+    hours: float | None
+    minutes: float | None
+    seconds: float | None
 
     @abstractmethod
     def __init__(self,
-                 hours: Optional[float] = None,
-                 minutes: Optional[float] = None,
-                 seconds: Optional[float] = None
+                 hours: float | None = None,
+                 minutes: float | None = None,
+                 seconds: float | None = None
                  ):
         """
         :param hours: how many hours period. It will add to other parameters.

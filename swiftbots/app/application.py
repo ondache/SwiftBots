@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any, Optional, Union
+from typing import Any
 
 from swiftbots.all_types import ILogger, ILoggerFactory, IScheduler
 from swiftbots.app.container import AppContainer
@@ -11,9 +11,9 @@ from swiftbots.tasks.schedulers import SimpleScheduler
 
 class SwiftBots:
     def __init__(self,
-                 logger_factory: Optional[ILoggerFactory] = None,
-                 scheduler: Optional[IScheduler] = None,
-                 runner: Optional[Callable[[AppContainer], Any]] = None
+                 logger_factory: ILoggerFactory | None = None,
+                 scheduler: IScheduler | None = None,
+                 runner: Callable[[AppContainer], Any] | None = None
                  ):
         assert logger_factory is None or isinstance(
             logger_factory, ILoggerFactory
@@ -38,7 +38,7 @@ class SwiftBots:
 
         self.__bots[bot.name] = bot
 
-    def add_bots(self, bots: Union[Bot, list[Bot]]) -> None:
+    def add_bots(self, bots: Bot | list[Bot]) -> None:
         if isinstance(bots, list):
             for bot in bots:
                 self.add_bot(bot)
