@@ -1,14 +1,8 @@
 import re
-from collections.abc import Coroutine
-from typing import TYPE_CHECKING, Any, Union
+from typing import Union
 
 from swiftbots.c_ext import search_ext
-from swiftbots.functions import resolve_function_args
 from swiftbots.types import DecoratedCallable
-
-if TYPE_CHECKING:
-    from swiftbots.bots import ChatBot
-    from swiftbots.chats import Chat
 
 
 FINAL_INDICATOR = '**'
