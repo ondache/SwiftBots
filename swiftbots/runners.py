@@ -1,7 +1,5 @@
 import asyncio
 import sys
-from traceback import format_exc
-from typing import Any
 
 from swiftbots.all_types import (
     ExitApplicationException,
@@ -12,8 +10,9 @@ from swiftbots.all_types import (
 )
 from swiftbots.app.container import AppContainer
 from swiftbots.bots import Bot, build_scheduler, stop_bot_async
-from swiftbots.functions import call_raisable_function_async, decompose_bot_as_dependencies, resolve_function_args
-from swiftbots.utils import ErrorRateMonitor
+from swiftbots.middlewares import compose_middlewares
+from swiftbots.utils import error_rate_monitors, ErrorRateMonitor
+
 
 __ALL_TASKS: set[str] = set()
 __SCHEDULER_TASK_NAME = '__sched__'
@@ -28,42 +27,12 @@ async def start_async_listener(bot: Bot) -> None:
     Launches all bot listeners, and sends all updates to their handlers.
     Runs asynchronously.
     """
-    err_monitor = ErrorRateMonitor(cooldown=60)
+    error_rate_monitors.set(ErrorRateMonitor(cooldown=60))
     generator = bot.listener_func()
+    middlewares = bot._middlewares
+    entry = compose_middlewares(bot, middlewares)
     while True:
-        try:
-            output = await generator.__anext__()
-        # except (AttributeError, TypeError, KeyError, AssertionError) as e:
-        #     await bot.logger.critical_async(f"Fix the code! Critical {e.__class__.__name__} "
-        #                                     f"raised: {e}. Full traceback:\n{format_exc()}")
-        #     continue
-        except RestartListeningException:
-            continue
-        except Exception as e:
-            await bot.logger.exception_async(
-                f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}`"
-                f" and kept on listening:\n{e}.\nFull traceback:\n{format_exc()}"
-            )
-            if err_monitor.since_start < 3:
-                raise ExitBotException(
-                    f"Bot {bot.name} raises immediately after start listening. "
-                    f"Stopping bot."
-                )
-            rate = err_monitor.evoke()
-            if rate > 5:
-                await bot.logger.error_async(f"Bot {bot.name} sleeps for 30 seconds.")
-                await asyncio.sleep(30)
-                err_monitor.error_count = 3
-            generator = bot.listener_func()
-            continue
-
-        async def handle() -> Any:  # noqa: ANN401
-            deps = decompose_bot_as_dependencies(bot)
-            deps.update(output)
-            deps['all_deps'] = deps
-            args = resolve_function_args(bot.handler_func, deps)
-            return await bot.handler_func(**args)
-        await call_raisable_function_async(handle, bot)
+        generator = await entry(generator)
 
 
 async def start_bot(bot: Bot, scheduler: IScheduler) -> None:

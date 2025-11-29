@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import Any, TypeVar
+from traceback import format_exc
 
 import httpx
 
@@ -14,7 +15,6 @@ from swiftbots.all_types import (
 )
 from swiftbots.chats import Chat, TelegramChat
 from swiftbots.functions import (
-    call_raisable_function_async,
     decompose_bot_as_dependencies,
     generate_name,
     resolve_function_args,
@@ -29,7 +29,19 @@ from swiftbots.message_handlers import (
     insert_trie,
 )
 from swiftbots.tasks.tasks import TaskInfo
-from swiftbots.types import AsyncListenerFunction, AsyncSenderFunction, DecoratedCallable
+from swiftbots.types import (
+    AsyncListenerFunction,
+    AsyncSenderFunction,
+    DecoratedCallable,
+    Middleware
+)
+from swiftbots.middlewares import (
+    process_listener_exceptions,
+    execute_listener,
+    process_handler_exceptions,
+    resolve_deps,
+    call_handler
+)
 
 
 class Bot:
@@ -37,12 +49,14 @@ class Bot:
     This bot can only have a listener, a handler or tasks"""
     listener_func: AsyncListenerFunction
     handler_func: DecoratedCallable
+    _middlewares: list[Middleware]
 
     def __init__(
             self,
             name: str | None = None,
             bot_logger_factory: ILoggerFactory | None = None,
-            run_at_start = True
+            run_at_start = True,
+            middlewares: list[Middleware] | None = None
     ):
         assert bot_logger_factory is None or isinstance(
             bot_logger_factory, ILoggerFactory
@@ -51,6 +65,8 @@ class Bot:
         self.task_infos: list[TaskInfo] = list()
         self.name: str = name or generate_name()
         self.run_at_start: bool = run_at_start
+        self._custom_middlewares: list[Middleware] | None = middlewares
+        self._user_middlewares: list[Middleware] = []
         bot_logger_factory = bot_logger_factory or SysIOLoggerFactory()
         self.__logger: ILogger = bot_logger_factory.get_logger()
         self.__logger.bot_name = self.name
@@ -115,6 +131,13 @@ class Bot:
 
         return wrapper
 
+    def middleware(self) -> Callable[[Middleware], Middleware]:
+        def wrapper(func: Middleware) -> Middleware:
+            self._user_middlewares.append(func)
+            return func
+
+        return wrapper
+
     async def before_start_async(self) -> None:
         """
         Do something right before the app starts.
@@ -122,7 +145,17 @@ class Bot:
         Use it like `super().before_start_async()`.
         """
         # TODO: do assert, check if listener_func is exist in self
-        ...
+        if self._custom_middlewares is not None:
+            self._middlewares = self._custom_middlewares
+        else:
+            self._middlewares = [
+                process_listener_exceptions,
+                execute_listener,
+                process_handler_exceptions,
+                resolve_deps,
+                *self._user_middlewares,
+                call_handler
+            ]
 
     async def before_close_async(self) -> None:
         ...
@@ -467,15 +500,26 @@ class TelegramBot(ChatBot):
 def build_task_caller(info: TaskInfo, bot: Bot) -> Callable[..., Any]:
     func = info.func
 
-    def caller() -> Any:  # noqa: ANN401
-        if bot.is_enabled:
-            min_deps = decompose_bot_as_dependencies(bot)
-            args = resolve_function_args(func, min_deps)
-            return func(**args)
-        return None
+    async def caller() -> Any:  # noqa: ANN401
+        try:
+            if bot.is_enabled:
+                min_deps = decompose_bot_as_dependencies(bot)
+                args = resolve_function_args(func, min_deps)
+                return await func(**args)
+            return None
+        except (AttributeError, TypeError, KeyError, AssertionError) as e:
+            await bot.logger.critical_async(
+                f"Fix the code. Critical `{e.__class__.__name__}` "
+                f"raised:\n{e}.\nFull traceback:\n{format_exc()}"
+            )
+        except Exception as e:
+            await bot.logger.exception_async(
+                f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}` "
+                f"and kept on working:\n{e}.\nFull traceback:\n{format_exc()}"
+            )
 
     def wrapped_caller() -> Any:  # noqa: ANN401
-        return call_raisable_function_async(caller, bot)
+        return caller()
 
     return wrapped_caller
 

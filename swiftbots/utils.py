@@ -1,4 +1,8 @@
 import time
+from contextvars import ContextVar
+
+
+error_rate_monitors: ContextVar[ErrorRateMonitor]  = ContextVar('error_rate_monitors')
 
 
 class ErrorRateMonitor:

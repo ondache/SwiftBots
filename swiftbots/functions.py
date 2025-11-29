@@ -43,30 +43,12 @@ def resolve_function_args(function: Callable[..., Any], given_data: dict) -> dic
     return args
 
 
-def decompose_bot_as_dependencies(bot: 'Bot') -> dict[str, Any]:
+def decompose_bot_as_dependencies(bot: Bot) -> dict[str, Any]:
     return {
         'name': bot.name,
         'logger': bot.logger,
     }
 
-
-async def call_raisable_function_async(func: Callable[[], Any], bot: 'Bot') -> Any:
-    try:
-        return await func()
-    except (AttributeError, TypeError, KeyError, AssertionError) as e:
-        await bot.logger.critical_async(
-            f"Fix the code. Critical `{e.__class__.__name__}` "
-            f"raised:\n{e}.\nFull traceback:\n{format_exc()}"
-        )
-        # if context is not None and isinstance(bot.view, IChatView): TODO: uncomment or delete
-        #     await bot.view.error_async(context)
-    except Exception as e:
-        await bot.logger.exception_async(
-            f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}` "
-            f"and kept on working:\n{e}.\nFull traceback:\n{format_exc()}"
-        )
-        # if context is not None and isinstance(bot.view, IChatView): TODO: uncomment or delete
-        #     await bot.view.error_async(context)
 
 
 def generate_name(count: int = 7) -> str:
