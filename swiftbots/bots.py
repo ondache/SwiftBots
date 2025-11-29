@@ -332,40 +332,35 @@ class TelegramBot(ChatBot):
                  chat_unknown_error_message: str = "Unknown command",
                  chat_refuse_message: str = "Access forbidden",
                  run_at_start = True,
+                 middlewares: list[Middleware] | None = None,
                  ):
         super().__init__(name=name,
                          bot_logger_factory=bot_logger_factory,
+                         chat_error_message=chat_error_message,
+                         chat_unknown_error_message=chat_unknown_error_message,
+                         chat_refuse_message=chat_refuse_message,
                          admin=admin,
-                         run_at_start=run_at_start)
+                         run_at_start=run_at_start,
+                         middlewares=middlewares)
         self.__token = token
         self.__greeting_enabled = greeting_enabled
         self._sender_func = self._send_async
         self.__should_skip_old_updates = skip_old_updates
         self.listener_func = self.telegram_listener
 
-        def handler(message: str,
-                    sender: str | int,
-                    all_deps: dict[str, Any],
-                    message_id: int,
-                    username: str | None
-                    ) -> Coroutine:
-            chat = TelegramChat(
-                sender=sender,
-                message=message,
+    def _make_chat(self, deps: dict) -> TelegramChat:
+        return TelegramChat(
+                sender=deps['sender'],
+                message=deps['raw_message'],
                 function_sender=self._sender_func,
                 logger=self.logger,
-                message_id=message_id,
-                username=username,
+                message_id=deps['message_id'],
+                username=deps['username'],
                 fetch_async=self.fetch_async,
-                error_message=chat_error_message,
-                unknown_message=chat_unknown_error_message,
-                refuse_message=chat_refuse_message,
+                error_message=self._chat_error_message,
+                unknown_message=self._chat_unknown_message,
+                refuse_message=self._chat_refuse_message,
             )
-            all_deps['chat'] = chat
-            # TODO: todo
-            return self.overridden_handler(message, chat, all_deps)
-
-        self.handler_func = handler
 
     async def _send_async(self, message: str, user: str | int) -> dict:
         result = {}
