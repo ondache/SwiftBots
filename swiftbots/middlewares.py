@@ -9,7 +9,7 @@ from swiftbots.types import Middleware, CallNextMiddleware
 from swiftbots.all_types import RestartListeningException, ExitBotException
 from swiftbots.message_handlers import search_best_command_match, is_user_allowed
 if TYPE_CHECKING:
-    from swiftbots.bots import Bot, ChatBot
+    from swiftbots.bots import Bot, ChatBot, TelegramBot
 
 
 def make_layer(bot: 'Bot', cur_layer: Middleware, next_layer: CallNextMiddleware) -> CallNextMiddleware:
@@ -132,3 +132,37 @@ async def route_chat_message(bot: 'ChatBot', deps: dict, call_next: CallNextMidd
     return await call_next(deps)
 
 
+async def deconstruct_telegram_message(bot: 'TelegramBot', update: dict, call_next: CallNextMiddleware) -> dict | None:
+    """
+    https://core.telegram.org/bots/api#message
+    """
+    update = update["result"][0]
+    if "message" in update:
+        message = update["message"]
+        sender = message["from"]["id"]
+        username = (
+            message["from"]["username"]
+            if "username" in message["from"]
+            else None
+        )
+        text = ''
+        photo = None
+        if "text" in message:
+            text = message["text"]
+        if "photo" in message:
+            photo = message["photo"][-1]["file_id"]
+        await bot.logger.info_async(
+            f"Came message {'with photo' + photo if photo else ''} from '{sender}' ({username}): '{text}'"
+        )
+        if text or photo:
+            output = {
+                "message": text,
+                "photo": photo,
+                "sender": sender,
+                "message_id": message["message_id"],
+                "username": username,
+                "raw_update": update
+            }
+            return await call_next(output)
+    await bot.logger.error_async("Unknown message type:\n" + str(update))
+    return None

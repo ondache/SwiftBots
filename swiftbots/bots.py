@@ -42,7 +42,8 @@ from swiftbots.middlewares import (
     call_with_dependencies_injected,
     route_chat_message,
     load_dependencies,
-    load_chat_dependencies
+    load_chat_dependencies,
+    deconstruct_telegram_message,
 )
 
 
@@ -388,53 +389,29 @@ class TelegramBot(ChatBot):
                 raise RestartListeningException()
         return answer
 
-    async def telegram_listener(self) -> None:
+    async def telegram_listener(self) -> AsyncGenerator[dict, None]:
+        if self.__first_time_launched and self.__greeting_enabled and self._admin is not None:
+            await self._sender_func(f"{self.name} is started!", self._admin)
         while True:
-            if self.__greeting_enabled and self._admin is not None:
-                await self._sender_func(f"{self.name} is started!", self._admin)
-
             try:
                 async for update in self._get_updates_async():
-                    data = await self._deconstruct_message_async(update)
-                    if data:
-                        yield data
+                    yield update
 
             except httpx.ConnectError:
                 await self._handle_server_connection_error_async()
 
-    async def _deconstruct_message_async(self, update: dict) -> dict | None:
-        """
-        https://core.telegram.org/bots/api#message
-        """
-        update = update["result"][0]
-        if "message" in update:
-            message = update["message"]
-            sender = message["from"]["id"]
-            username = (
-                message["from"]["username"]
-                if "username" in message["from"]
-                else None
-            )
-            text = ''
-            photo = None
-            if "text" in message:
-                text = message["text"]
-            if "photo" in message:
-                photo = message["photo"][-1]["file_id"]
-            await self.logger.info_async(
-                f"Came message {'with photo' + photo if photo else ''} from '{sender}' ({username}): '{text}'"
-            )
-            if text or photo:
-                return {
-                    "message": text,
-                    "photo": photo,
-                    "sender": sender,
-                    "message_id": message["message_id"],
-                    "username": username,
-                    "raw_update": update
-                }
-        await self.logger.error_async("Unknown message type:\n" + str(update))
-        return None
+    def _configure_middlewares(self) -> None:
+        self._middlewares = self._custom_middlewares or [
+                process_listener_exceptions,
+                execute_listener,
+                deconstruct_telegram_message,
+                process_handler_exceptions,
+                load_dependencies,
+                load_chat_dependencies,
+                route_chat_message,
+                *self._user_middlewares,
+                call_with_dependencies_injected,
+            ]
 
     async def _handle_server_connection_error_async(self) -> None:
         await self.logger.info_async(
