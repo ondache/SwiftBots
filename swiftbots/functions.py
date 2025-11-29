@@ -11,8 +11,7 @@ if TYPE_CHECKING:
 
 
 def depends(dependency: Callable[..., Any]) -> DependencyContainer:
-    """
-    :param dependency: A "dependable" argument, must be function.
+    """:param dependency: A "dependable" argument, must be function.
     """
     return DependencyContainer(dependency)
 
@@ -47,7 +46,7 @@ def decompose_bot_as_dependencies(bot: Bot) -> dict[str, Any]:
         'name': bot.name,
         'logger': bot.logger,
         'bot': bot,
-        'handler': bot.handler_func
+        'handler': bot.handler_func,
     }
     deps['all_deps'] = deps
     return deps

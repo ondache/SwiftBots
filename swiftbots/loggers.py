@@ -11,8 +11,7 @@ report_async_func_type = Callable[[str], Coroutine[Any, Any, None]]
 
 
 def logger_exc_catcher(func: Callable) -> Callable:
-    """
-    Using `logger_exc_catcher` is reasonable in methods where are used API
+    """Using `logger_exc_catcher` is reasonable in methods where are used API
     requests to make a logger never throwable exceptions.
     """
 
@@ -22,7 +21,7 @@ def logger_exc_catcher(func: Callable) -> Callable:
         except Exception as e:
             logging.critical(
                 f"[ERROR] Raised '{e.__class__.__name__}' when using logger:\n{e}.\n"
-                f"Full traceback: {format_exc()}"
+                f"Full traceback: {format_exc()}",
             )
 
     def sync_wrapper(*args, **kwargs) -> None:
@@ -31,7 +30,7 @@ def logger_exc_catcher(func: Callable) -> Callable:
         except Exception as e:
             logging.critical(
                 f"[ERROR] Raised '{e.__class__.__name__}' when using logger:\n{e}.\n"
-                f"Full traceback: {format_exc()}"
+                f"Full traceback: {format_exc()}",
             )
 
     if inspect.iscoroutinefunction(func):
@@ -88,8 +87,7 @@ class SysIOLogger(ILogger):
 
 
 class AdminLogger(SysIOLogger):
-    """
-    A logger that logs the same as SysIOLogger, but it also reports
+    """A logger that logs the same as SysIOLogger, but it also reports
     to the administrator messages with levels ERROR, CRITICAL and EXCEPTION.
     Methods `report` and `report_async` send a message to an administrator
     directly and use level WARNING to log with base logging instance.

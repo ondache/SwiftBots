@@ -13,8 +13,7 @@ def shutdown_app() -> None:
 
 
 async def shutdown_bot_async(bot_name: str) -> bool:
-    """
-    Shutdown the instance. Won't restart.
+    """Shutdown the instance. Won't restart.
     If param bot_name is provided, it closes the current task.
     Otherwise, it closes the bot with the name `bot_name`
     :return: True if the bot was stopped, False if not found
@@ -22,19 +21,17 @@ async def shutdown_bot_async(bot_name: str) -> bool:
     bot_name = bot_name.casefold()
     if bot_name not in map(lambda name: name.casefold(), get_all_tasks()):
         return False
-    else:
-        tasks = asyncio.all_tasks()
-        found = filter(lambda t: t.get_name().casefold() == bot_name, tasks)
-        for task in found:
-            task.cancel()
-            await asyncio.sleep(0)
-            return True
-        return False
+    tasks = asyncio.all_tasks()
+    found = filter(lambda t: t.get_name().casefold() == bot_name, tasks)
+    for task in found:
+        task.cancel()
+        await asyncio.sleep(0)
+        return True
+    return False
 
 
 async def get_bot_names_async() -> tuple[set[str], set[str], set[str]]:
-    """
-    :returns: 1. a set of all the tasks in app;
+    """:returns: 1. a set of all the tasks in app;
     2. set of running tasks;
     3. set of stopped tasks
     """
@@ -49,8 +46,7 @@ async def get_bot_names_async() -> tuple[set[str], set[str], set[str]]:
 
 
 async def start_bot_async(bot_name: str) -> int:
-    """
-    Try to start bot. It must be already stopped.
+    """Try to start bot. It must be already stopped.
     :returns: exception `StartBotException` if bot was successfully asked started.
     1 if the bot already is running.
     2 if there is no such bot name
@@ -68,7 +64,7 @@ async def start_bot_async(bot_name: str) -> int:
 
 
 async def send_telegram_message_async(
-    message: str, admin: str, token: str, data: dict[str, Any] | None = None
+    message: str, admin: str, token: str, data: dict[str, Any] | None = None,
 ) -> None:
     if data is None:
         data = {}
@@ -84,12 +80,12 @@ async def send_telegram_message_async(
                 send_data["parse_mode"] = "markdown"
             send_data.update(data)
             await session.post(
-                f"https://api.telegram.org/bot{token}/sendMessage", json=send_data
+                f"https://api.telegram.org/bot{token}/sendMessage", json=send_data,
             )
 
 
 def send_telegram_message(
-    message: str, admin: str, token: str, data: dict[str, Any] | None = None
+    message: str, admin: str, token: str, data: dict[str, Any] | None = None,
 ) -> None:
     if data is None:
         data = {}

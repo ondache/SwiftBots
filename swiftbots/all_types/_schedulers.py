@@ -10,10 +10,9 @@ class IScheduler(ABC):
     @abstractmethod
     def add_task(self,
                  task_info: 'TaskInfo',
-                 caller: Callable[[], Any]
+                 caller: Callable[[], Any],
                  ) -> None:
-        """
-        Add the task as a candidate for scheduling.
+        """Add the task as a candidate for scheduling.
         """
         ...
 
@@ -29,8 +28,7 @@ class IScheduler(ABC):
 
     @abstractmethod
     async def start(self) -> None:
-        """
-        The framework will call this method once, just when the app is started.
+        """The framework will call this method once, just when the app is started.
         All tasks will be scheduled and then executed here.
         The framework will make confidence that the appropriate controller method will
         be executed with demanded dependencies.

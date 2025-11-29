@@ -14,10 +14,10 @@ class SwiftBots:
                  logger_factory: ILoggerFactory | None = None,
                  run_with: dict[str, Any] | None = None,
                  scheduler: IScheduler | None = None,
-                 runner: Callable[[AppContainer], Any] | None = None
+                 runner: Callable[[AppContainer], Any] | None = None,
                  ):
         assert logger_factory is None or isinstance(
-            logger_factory, ILoggerFactory
+            logger_factory, ILoggerFactory,
         ), "Logger factory must be of type ILoggerFactory"
 
         self.__bots: dict[str, Bot] = {}
@@ -48,8 +48,7 @@ class SwiftBots:
             raise AssertionError('bots must be a type of a list of Bot or an inherited class')
 
     def run(self) -> None:
-        """
-        Start application to listen to or execute all the bots
+        """Start application to listen to or execute all the bots
         """
         if len(self.__bots) == 0:
             self.__logger.critical("No bots used")

@@ -1,7 +1,7 @@
 __all__ = [
+    'PeriodTrigger',
     'SimpleScheduler',
     'TaskInfo',
-    'PeriodTrigger'
 ]
 
 

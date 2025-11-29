@@ -30,10 +30,9 @@ def compose_middlewares(bot: 'Bot', middlewares: list[Middleware]) -> CallNextMi
 async def process_listener_exceptions(
         bot: 'Bot',
         listen_generator: AsyncGenerator,
-        call_next: CallNextMiddleware
+        call_next: CallNextMiddleware,
 ) -> AsyncGenerator:
-    """
-    The middleware prevents non-base exceptions from stopping the app.
+    """The middleware prevents non-base exceptions from stopping the app.
     Caught exceptions are logged and processed accordingly to its type.
     Too frequent exceptions cause the bot to sleep for some time.
     Used only for listener functions.
@@ -51,12 +50,12 @@ async def process_listener_exceptions(
     except Exception as e:
         await bot.logger.exception_async(
             f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}`"
-            f" and kept listening on:\n{e}.\nFull traceback:\n{format_exc()}"
+            f" and kept listening on:\n{e}.\nFull traceback:\n{format_exc()}",
         )
         if err_monitor.since_start < 3:
             raise ExitBotException(
                 f"Bot {bot.name} raises immediately after start listening. "
-                "Stopping the bot."
+                "Stopping the bot.",
             )
         rate = err_monitor.evoke()
         if rate > 5:
@@ -67,8 +66,7 @@ async def process_listener_exceptions(
 
 
 async def execute_listener(bot: 'Bot', listen_generator: AsyncGenerator, call_next: CallNextMiddleware) -> Any:
-    """
-    The middleware extracts the request from the bot listener and passes it to the next middleware.
+    """The middleware extracts the request from the bot listener and passes it to the next middleware.
     """
     output = await listen_generator.__anext__()
     return await call_next(output)
@@ -80,12 +78,12 @@ async def process_handler_exceptions(bot: 'Bot', output: Any, call_next: CallNex
     except (AttributeError, TypeError, KeyError, AssertionError) as e:
         await bot.logger.critical_async(
             f"Fix the code. Critical `{e.__class__.__name__}` "
-            f"raised:\n{e}.\nFull traceback:\n{format_exc()}"
+            f"raised:\n{e}.\nFull traceback:\n{format_exc()}",
         )
     except Exception as e:
         await bot.logger.exception_async(
             f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}` "
-            f"and kept on working:\n{e}.\nFull traceback:\n{format_exc()}"
+            f"and kept on working:\n{e}.\nFull traceback:\n{format_exc()}",
         )
 
 
@@ -138,8 +136,7 @@ async def route_chat_message(bot: 'ChatBot', deps: dict, call_next: CallNextMidd
 
 
 async def deconstruct_telegram_message(bot: 'TelegramBot', update: dict, call_next: CallNextMiddleware) -> dict | None:
-    """
-    https://core.telegram.org/bots/api#message
+    """https://core.telegram.org/bots/api#message
     """
     update = update["result"][0]
     if "message" in update:
@@ -157,7 +154,7 @@ async def deconstruct_telegram_message(bot: 'TelegramBot', update: dict, call_ne
         if "photo" in message:
             photo = message["photo"][-1]["file_id"]
         await bot.logger.info_async(
-            f"Came message {'with photo' + photo if photo else ''} from '{sender}' ({username}): '{text}'"
+            f"Came message {'with photo' + photo if photo else ''} from '{sender}' ({username}): '{text}'",
         )
         if text or photo:
             output = {
@@ -166,7 +163,7 @@ async def deconstruct_telegram_message(bot: 'TelegramBot', update: dict, call_ne
                 "sender": sender,
                 "message_id": message["message_id"],
                 "username": username,
-                "raw_update": update
+                "raw_update": update,
             }
             return await call_next(output)
     await bot.logger.error_async("Unknown message type:\n" + str(update))

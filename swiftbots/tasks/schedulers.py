@@ -1,5 +1,5 @@
 __all__ = [
-    'SimpleScheduler'
+    'SimpleScheduler',
 ]
 
 import asyncio
@@ -56,7 +56,7 @@ class SimpleScheduler(IScheduler):
 
     def add_task(self,
                  task_info: TaskInfo,
-                 caller: Callable[[], Any]
+                 caller: Callable[[], Any],
                  ) -> None:
         assert task_info.name not in self.__tasks, f'Task {task_info.name} has already been added'
         for trigger in task_info.triggers:

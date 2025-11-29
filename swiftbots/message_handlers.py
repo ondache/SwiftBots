@@ -14,7 +14,7 @@ class CompiledChatCommand:
         method: DecoratedCallable,
         pattern: re.Pattern,
         whitelist_users: list[str] | None,
-        blacklist_users: list[str] | None
+        blacklist_users: list[str] | None,
     ):
         self.command_name = command_name
         self.method = method
@@ -64,8 +64,7 @@ class ChatMessageHandler:
 
 
 def compile_command_as_regex(name: str) -> re.Pattern:
-    """
-    Compile with regex patterns all the command names for the faster search.
+    """Compile with regex patterns all the command names for the faster search.
     Pattern is:
     1. Begins with the NAME OF COMMAND (case-insensitive).
     2. Then any whitespace characters [ \f\n\r\t\v] (zero or more).
@@ -87,7 +86,7 @@ def compile_chat_commands(
             method=handler.function,
             pattern=compile_command_as_regex(command),
             blacklist_users=handler.blacklist_users,
-            whitelist_users=handler.whitelist_users
+            whitelist_users=handler.whitelist_users,
         )
         for handler in handlers
         for command in handler.commands
@@ -97,7 +96,7 @@ def compile_chat_commands(
 
 def is_user_allowed(user: str | int,
                     whitelist_users: list[str] | None,
-                    blacklist_users: list[str] | None
+                    blacklist_users: list[str] | None,
                     ) -> bool:
     user = str(user).casefold()
     if blacklist_users is not None:

@@ -44,7 +44,9 @@ from swiftbots.types import AsyncListenerFunction, AsyncSenderFunction, Decorate
 
 class Bot:
     """Base class for all other types of bots.
-    This bot can only have a listener, a handler or tasks"""
+    This bot can only have a listener, a handler or tasks
+    """
+
     listener_func: AsyncListenerFunction
     handler_func: DecoratedCallable
     _middlewares: list[Middleware]
@@ -54,10 +56,10 @@ class Bot:
             name: str | None = None,
             bot_logger_factory: ILoggerFactory | None = None,
             run_at_start: bool = True,
-            middlewares: list[Middleware] | None = None
+            middlewares: list[Middleware] | None = None,
     ):
         assert bot_logger_factory is None or isinstance(
-            bot_logger_factory, ILoggerFactory
+            bot_logger_factory, ILoggerFactory,
         ), "Logger must be of type ILoggerFactory"
 
         self.task_infos: list[TaskInfo] = list()
@@ -103,10 +105,9 @@ class Bot:
             self,
             triggers: ITrigger | list[ITrigger],
             run_at_start: bool = False,
-            name: str | None = None
+            name: str | None = None,
     ) -> Callable[[DecoratedCallable], TaskInfo]:
-        """
-        Mark a bot method as a task.
+        """Mark a bot method as a task.
         Will be executed by SwiftBots automatically.
         """
         assert isinstance(triggers, ITrigger) or isinstance(triggers, list), \
@@ -144,13 +145,11 @@ class Bot:
         assert 'handler_func' in members, 'You have to set a handler or use different type of a bot'
 
     async def before_start_async(self) -> None:
-        """
-        Do something right before the app starts.
+        """Do something right before the app starts.
         Need to override this method.
         Use it like `super().before_start_async()`.
         """
         # TODO: do assert, check if listener_func is exist in self
-        ...
 
     async def before_close_async(self) -> None:
         ...
@@ -167,8 +166,7 @@ class Bot:
 
 
 class StubBot(Bot):
-    """
-    This class is used as a stub to allow a bot to run without a listener or a handler.
+    """This class is used as a stub to allow a bot to run without a listener or a handler.
     """
 
     def __init__(self,
@@ -188,7 +186,6 @@ class StubBot(Bot):
 
     async def stub_handler(self) -> None:
         await asyncio.sleep(0)
-        return
 
 
 class ChatBot(Bot):
@@ -207,7 +204,7 @@ class ChatBot(Bot):
                  chat_refuse_message: str = "Access forbidden",
                  admin: int | str | None = None,
                  run_at_start: bool = True,
-                 middlewares: list[Middleware] | None = None
+                 middlewares: list[Middleware] | None = None,
                  ):
         super().__init__(name=name,
                          bot_logger_factory=bot_logger_factory,
@@ -225,8 +222,7 @@ class ChatBot(Bot):
                         admin_only: bool = False,
                         whitelist_users: list[str | int] | None = None,
                         blacklist_users: list[str | int] | None = None) -> DecoratedCallable:
-        """
-        :param commands: commands, that will fire the method. For example: ['add', '+'].
+        """:param commands: commands, that will fire the method. For example: ['add', '+'].
         Message "add 2 2" will execute in this method.
         :param admin_only: only admin will be able to use this command. If True, whitelist_users list will be ignored.
         :param whitelist_users: the only users from the list will be able to use this command. If admin_only = True,
@@ -303,7 +299,7 @@ class ChatBot(Bot):
             logger=self.logger,
             error_message=self._chat_error_message,
             unknown_message=self._chat_unknown_message,
-            refuse_message=self._chat_refuse_message
+            refuse_message=self._chat_refuse_message,
         )
 
 
@@ -380,7 +376,7 @@ class TelegramBot(ChatBot):
             if state == 0:  # repeat request
                 await asyncio.sleep(4)
                 response = await self.__http_session.post(
-                    url=url, json=data, headers=headers, timeout=timeout
+                    url=url, json=data, headers=headers, timeout=timeout,
                 )
                 answer = response.json()
             if not answer["ok"]:
@@ -413,13 +409,12 @@ class TelegramBot(ChatBot):
 
     async def _handle_server_connection_error_async(self) -> None:
         await self.logger.info_async(
-            f"Connection ERROR in {self.name}. Sleep 5 seconds"
+            f"Connection ERROR in {self.name}. Sleep 5 seconds",
         )
         await asyncio.sleep(5)
 
     async def _get_updates_async(self) -> AsyncGenerator[dict, None]:
-        """
-        Long Polling: Telegram BOT API https://core.telegram.org/bots/api
+        """Long Polling: Telegram BOT API https://core.telegram.org/bots/api
         """
         timeout = 1000
         data = {"timeout": timeout, "limit": 1, "allowed_updates": self.ALLOWED_UPDATES}
@@ -435,15 +430,14 @@ class TelegramBot(ChatBot):
                     continue
                 else:
                     raise ExitBotException(
-                        f"Error {ans} while recieving long polling server"
+                        f"Error {ans} while recieving long polling server",
                     )
             if len(ans["result"]) != 0:
                 data["offset"] = ans["result"][0]["update_id"] + 1
                 yield ans
 
     async def _handle_error_async(self, error: dict) -> int:
-        """
-        https://core.telegram.org/api/errors
+        """https://core.telegram.org/api/errors
         :returns: whether code should continue executing after the error.
         -1 if bot should be exited. Raises BaseException this case
         0 if it should just repeat request.
@@ -457,26 +451,25 @@ class TelegramBot(ChatBot):
             await self.logger.error_async(msg)
             return 1
         # too many requests (flood)
-        elif error_code == 420:
+        if error_code == 420:
             await self.logger.error_async(
-                f"{self.name} reached Flood error. Fix the code"
+                f"{self.name} reached Flood error. Fix the code",
             )
             await asyncio.sleep(10)
             return 0
         # unauthorized
-        elif error_code == 401:
+        if error_code == 401:
             await self.logger.critical_async(msg)
             raise ExitBotException()
-        elif error_code == 409:
+        if error_code == 409:
             msg = (
                 "Error code 409. Another telegram instance is working. "
                 "Shutting down this instance"
             )
             await self.logger.critical_async(msg)
             raise ExitBotException(msg)
-        else:
-            await self.logger.error_async("Unknown error. Add code " + msg)
-            return 1
+        await self.logger.error_async("Unknown error. Add code " + msg)
+        return 1
 
     async def _skip_old_updates_async(self) -> int:
         data = {"timeout": 0, "limit": 1, "offset": -1}
@@ -499,7 +492,7 @@ class TelegramBot(ChatBot):
 def build_task_caller(info: TaskInfo, bot: Bot) -> Callable[..., Any]:
     func = info.func
 
-    async def caller() -> Any:  # noqa: ANN401
+    async def caller() -> Any:
         try:
             if bot.is_enabled:
                 min_deps = decompose_bot_as_dependencies(bot)
@@ -509,15 +502,15 @@ def build_task_caller(info: TaskInfo, bot: Bot) -> Callable[..., Any]:
         except (AttributeError, TypeError, KeyError, AssertionError) as e:
             await bot.logger.critical_async(
                 f"Fix the code. Critical `{e.__class__.__name__}` "
-                f"raised:\n{e}.\nFull traceback:\n{format_exc()}"
+                f"raised:\n{e}.\nFull traceback:\n{format_exc()}",
             )
         except Exception as e:
             await bot.logger.exception_async(
                 f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}` "
-                f"and kept on working:\n{e}.\nFull traceback:\n{format_exc()}"
+                f"and kept on working:\n{e}.\nFull traceback:\n{format_exc()}",
             )
 
-    def wrapped_caller() -> Any:  # noqa: ANN401
+    def wrapped_caller() -> Any:
         return caller()
 
     return wrapped_caller

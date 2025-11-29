@@ -13,7 +13,7 @@ class Chat:
             logger: ILogger,
             error_message: str,
             unknown_message: str,
-            refuse_message: str
+            refuse_message: str,
     ):
         self.sender = sender
         self.message = message
@@ -24,28 +24,24 @@ class Chat:
         self.refuse_message = refuse_message
 
     async def reply_async(self, message: str) -> dict:
-        """
-        Send the user the message back.
+        """Send the user the message back.
         """
         return await self.function_sender(message, self.sender)
 
     async def error_async(self) -> dict:
-        """
-        Inform the user there is an internal error.
+        """Inform the user there is an internal error.
         """
         await self.logger.error_async(f"Error in the bot. The sender: {self.sender}, the message: {self.message}")
         return await self.reply_async(self.error_message)
 
     async def unknown_command_async(self) -> dict:
-        """
-        If the user sends some unknown shit, then needed to warn him
+        """If the user sends some unknown shit, then needed to warn him
         """
         await self.logger.info_async(f"{self.sender} sent unknown command. {self.message}")
         return await self.reply_async(self.unknown_message)
 
     async def refuse_async(self) -> dict:
-        """
-        If the user can't use it, then he must be aware.
+        """If the user can't use it, then he must be aware.
         """
         await self.logger.info_async(f"Forbidden. The sender: {self.sender}, the message: {self.message}")
         return await self.reply_async(self.refuse_message)
@@ -63,7 +59,7 @@ class TelegramChat(Chat):
             fetch_async: Callable,
             error_message: str,
             unknown_message: str,
-            refuse_message: str
+            refuse_message: str,
     ):
         super().__init__(sender=sender,
                          message=message,
@@ -77,7 +73,7 @@ class TelegramChat(Chat):
         self.fetch_async = fetch_async
 
     async def update_message_async(
-        self, new_text: str, message_id: int, data: dict | None = None
+        self, new_text: str, message_id: int, data: dict | None = None,
     ) -> dict:
         if data is None:
             data = {}
@@ -87,7 +83,7 @@ class TelegramChat(Chat):
         return await self.fetch_async("editMessageText", data)
 
     async def send_async(
-        self, message: str, user: str | int, data: dict | None = None
+        self, message: str, user: str | int, data: dict | None = None,
     ) -> dict:
         if data is None:
             data = {}
@@ -101,7 +97,7 @@ class TelegramChat(Chat):
         return result
 
     async def delete_message_async(
-        self, message_id: int, data: dict | None = None
+        self, message_id: int, data: dict | None = None,
     ) -> dict:
         if data is None:
             data = {}
@@ -110,7 +106,7 @@ class TelegramChat(Chat):
         return await self.fetch_async("deleteMessage", data)
 
     async def send_sticker_async(
-        self, file_id: str, data: dict | None = None
+        self, file_id: str, data: dict | None = None,
     ) -> dict:
         if data is None:
             data = {}

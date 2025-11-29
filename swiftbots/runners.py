@@ -22,8 +22,7 @@ def get_all_tasks() -> set[str]:
 
 
 async def start_async_listener(bot: Bot) -> None:
-    """
-    Launches all bot listeners, and sends all updates to their handlers.
+    """Launches all bot listeners, and sends all updates to their handlers.
     Runs asynchronously.
     """
     error_rate_monitors.set(ErrorRateMonitor(cooldown=60))
@@ -59,7 +58,7 @@ async def start_async_loop(app_container: AppContainer) -> None:
             tasks.add(task)
     # Create a task for the scheduler
     tasks.add(
-        asyncio.create_task(sched.start(), name=__SCHEDULER_TASK_NAME)
+        asyncio.create_task(sched.start(), name=__SCHEDULER_TASK_NAME),
     )
 
     while True:
@@ -76,17 +75,17 @@ async def start_async_loop(app_container: AppContainer) -> None:
             try:
                 result = task.result()
                 await logger.critical_async(
-                    f"Bot {name} is finished with result {result} and restarted"
+                    f"Bot {name} is finished with result {result} and restarted",
                 )
             except (asyncio.CancelledError, ExitBotException) as ex:
                 if isinstance(ex, asyncio.CancelledError):
                     await logger.warning_async(
-                        f"Bot {name} is cancelled. Not started again"
+                        f"Bot {name} is cancelled. Not started again",
                     )
                     await logger.report_async(f"Bot {name}'s exited")
                 elif isinstance(ex, ExitBotException):
                     await logger.error_async(
-                        f"Bot {name} is exited with message: {ex}"
+                        f"Bot {name} is exited with message: {ex}",
                     )
                 bot = bots_dict[name]
                 await stop_bot_async(bot, sched)
@@ -111,12 +110,12 @@ async def start_async_loop(app_container: AppContainer) -> None:
                     bot_name_to_start = str(ex)
                     bot_to_start = bots_dict[str(ex)]
                     new_task = asyncio.create_task(
-                        start_bot(bot_to_start, sched), name=bot_name_to_start
+                        start_bot(bot_to_start, sched), name=bot_name_to_start,
                     )
                     tasks.add(new_task)
                 except Exception as e:
                     await logger.critical_async(
-                        f"Couldn't start bot {ex}. Exception: {e}"
+                        f"Couldn't start bot {ex}. Exception: {e}",
                     )
             except ExitApplicationException:
                 # close all bots
@@ -126,7 +125,7 @@ async def start_async_loop(app_container: AppContainer) -> None:
                         bot_to_exit = bots_dict[bot_name_to_exit]
                         await stop_bot_async(bot_to_exit, sched)
                         await bot_to_exit.logger.report_async(
-                            f"Bot {bot_to_exit.name}'s exited"
+                            f"Bot {bot_to_exit.name}'s exited",
                         )
                 for bot_to_close in bots:
                         await bot_to_close.before_close_async()

@@ -10,8 +10,7 @@ class ErrorRateMonitor:
         self.last_error_time = 0.0
 
     def evoke(self) -> int:
-        """
-        Remember time and rate of errors.
+        """Remember time and rate of errors.
         Return rate of errors from 0 to ERROR NUMBER PER COOLDOWN.
         """
         self.error_count += 1
