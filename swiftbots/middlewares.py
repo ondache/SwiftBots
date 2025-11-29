@@ -97,10 +97,8 @@ async def call_with_dependencies_injected(_, deps: dict, __) -> Any:
 
 
 async def load_chat_dependencies(bot: 'ChatBot', deps: dict, call_next: CallNextMiddleware) -> Any:
-    sender = deps['sender']
-    message = deps['message']
-    chat = bot._make_chat(sender, message)
-    deps['raw_message'] = message
+    deps['raw_message'] = deps['message']
+    chat = bot._make_chat(deps)
     deps['chat'] = chat
     return await call_next(deps)
 
