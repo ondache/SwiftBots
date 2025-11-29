@@ -3,55 +3,55 @@ import asyncio
 import pytest
 
 from swiftbots import ChatBot, SwiftBots
-from tests.common import close_test_app, run_raisable
+from tests.common import close_test_app, run_raisable, extract_exception_handler_middlewares
 
 global_dict = {}
 
 
-bot = ChatBot()
+
+def init_bot() -> ChatBot:
+    bot = ChatBot()
+    extract_exception_handler_middlewares(bot)
+    @bot.message_handler(commands=['command 1'])
+    async def command_handler_1(message: str, chat: bot.Chat):
+        await chat.reply_async(message + ' from command handler 1')
 
 
-@bot.message_handler(commands=['command 1'])
-async def command_handler_1(message: str, chat: bot.Chat):
-    await chat.reply_async(message + ' from command handler 1')
+    @bot.message_handler(commands=['command 2'])
+    async def never_should_be_called():
+        raise Exception()
 
 
-@bot.message_handler(commands=['command 2'])
-async def never_should_be_called():
-    raise Exception()
+    @bot.default_handler()
+    async def default_handler(message: str, chat: bot.Chat):
+        await chat.reply_async(message + ' from default handler')
 
 
-@bot.default_handler()
-async def default_handler(message: str, chat: bot.Chat):
-    await chat.reply_async(message + ' from default handler')
-
-
-@bot.sender()
-async def send_async(message, user):
-    await asyncio.sleep(0)
-    print(f'Message: {message} sent to {user}')
-    global global_dict
-    global_dict['answer1'] = message
-    global_dict['user1'] = user
-    close_test_app()
+    @bot.sender()
+    async def send_async(message, user):
+        await asyncio.sleep(0)
+        print(f'Message: {message} sent to {user}')
+        global global_dict
+        global_dict['answer1'] = message
+        global_dict['user1'] = user
+        close_test_app()
+    return bot
 
 
 class TestChatBot:
-
     @pytest.mark.timeout(3)
     def test_message_handler(self):
         app = SwiftBots()
-
+        bot = init_bot()
         @bot.listener()
         async def listen_async():
-            while True:
-                await asyncio.sleep(0)
-                test_value = 'Command 1  Unique message'
-                sender = 'Hund'
-                yield {
-                    "message": test_value,
-                    "sender": sender
-                }
+            await asyncio.sleep(0)
+            test_value = 'Command 1  Unique message'
+            sender = 'Hund'
+            yield {
+                "message": test_value,
+                "sender": sender
+            }
 
         app.add_bots([bot])
 
@@ -65,16 +65,16 @@ class TestChatBot:
     def test_default_handler(self):
         app = SwiftBots()
 
+        bot = init_bot()
         @bot.listener()
         async def listen_async():
-            while True:
-                await asyncio.sleep(0)
-                test_value = 'Not matching command'
-                sender = 'Pferd'
-                yield {
-                    "message": test_value,
-                    "sender": sender
-                }
+            await asyncio.sleep(0)
+            test_value = 'Not matching command'
+            sender = 'Pferd'
+            yield {
+                "message": test_value,
+                "sender": sender
+            }
 
         app.add_bots([bot])
 

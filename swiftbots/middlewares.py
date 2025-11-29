@@ -7,8 +7,9 @@ from swiftbots.functions import decompose_bot_as_dependencies, resolve_function_
 from swiftbots.utils import error_rate_monitors
 from swiftbots.types import Middleware, CallNextMiddleware
 from swiftbots.all_types import RestartListeningException, ExitBotException
+from swiftbots.message_handlers import search_best_command_match, is_user_allowed
 if TYPE_CHECKING:
-    from swiftbots.bots import Bot
+    from swiftbots.bots import Bot, ChatBot
 
 
 def make_layer(bot: 'Bot', cur_layer: Middleware, next_layer: CallNextMiddleware) -> CallNextMiddleware:
@@ -83,13 +84,53 @@ async def process_handler_exceptions(bot: 'Bot', output: Any, call_next: CallNex
         )
 
 
-async def call_handler(bot: 'Bot', output: dict, _) -> Any:
-    return await bot.handler_func(**output)
-
-
-async def resolve_deps(bot: 'Bot', output: Any, call_next: CallNextMiddleware) -> Any:
+async def load_dependencies(bot: 'Bot', output: dict, call_next: CallNextMiddleware) -> Any:
     deps = decompose_bot_as_dependencies(bot)
     deps.update(output)
-    deps['all_deps'] = deps
-    args = resolve_function_args(bot.handler_func, deps)
-    return await call_next(args)
+    return await call_next(deps)
+
+
+async def call_with_dependencies_injected(_, deps: dict, __) -> Any:
+    handler = deps['handler']
+    args = resolve_function_args(handler, deps)
+    return await handler(**args)
+
+
+async def load_chat_dependencies(bot: 'ChatBot', deps: dict, call_next: CallNextMiddleware) -> Any:
+    sender = deps['sender']
+    message = deps['message']
+    chat = bot._make_chat(sender, message)
+    deps['raw_message'] = message
+    deps['chat'] = chat
+    return await call_next(deps)
+
+
+async def route_chat_message(bot: 'ChatBot', deps: dict, call_next: CallNextMiddleware) -> dict:
+    trie = bot._trie
+    chat = deps['chat']
+    message = chat.message
+    best_matched_command, match = search_best_command_match(trie, message)
+
+    if best_matched_command and not is_user_allowed(chat.sender, best_matched_command.whitelist_users,
+                                                    best_matched_command.blacklist_users):
+        return await chat.refuse_async()
+
+    arguments = ""
+    # check if the command has arguments like `ADD NOTE apple, cigarettes, cheese`,
+    # where `ADD NOTE` is a command and the rest is arguments
+    if match:
+        message_without_command = match.group(1)
+        if message_without_command:
+            arguments = message_without_command
+
+    # Found the command. Call the method attached to the command
+    if not best_matched_command: # No matches. Send `unknown message`
+        return await chat.unknown_command_async()
+
+    command_name = best_matched_command.command_name
+    deps['arguments'] = deps['args'] = deps['message'] = arguments
+    deps['command'] = command_name
+    deps['handler'] = best_matched_command.method
+    return await call_next(deps)
+
+

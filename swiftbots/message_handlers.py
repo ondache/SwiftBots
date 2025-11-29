@@ -112,39 +112,3 @@ def is_user_allowed(user: str | int,
     if whitelist_users is not None:
         return user in whitelist_users
     return True
-
-
-def handle_message(
-        message: str,
-        chat: 'Chat',
-        trie: Trie,
-        all_deps: dict[str, Any],
-        bot: 'ChatBot'
-) -> Coroutine:
-    best_matched_command, match = search_best_command_match(trie, message)
-
-    if best_matched_command and not is_user_allowed(chat.sender, best_matched_command.whitelist_users, best_matched_command.blacklist_users):
-        return chat.refuse_async()
-
-    arguments = ""
-    # check if the command has arguments like `ADD NOTE apple, cigarettes, cheese`,
-    # where `ADD NOTE` is a command and the rest is arguments
-    if match:
-        message_without_command = match.group(1)
-        if message_without_command:
-            arguments = message_without_command
-
-    # Found the command. Call the method attached to the command
-    if best_matched_command:
-        method = best_matched_command.method
-        command_name = best_matched_command.command_name
-        all_deps['raw_message'] = message
-        all_deps['arguments'] = arguments
-        all_deps['args'] = arguments
-        all_deps['command'] = command_name
-        all_deps['message'] = arguments
-        all_deps['bot'] = bot
-        args = resolve_function_args(method, all_deps)
-        return method(**args)
-    else:  # No matches. Send `unknown message`
-        return chat.unknown_command_async()

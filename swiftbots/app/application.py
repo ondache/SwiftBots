@@ -32,9 +32,7 @@ class SwiftBots:
             (f"Bot with the name {bot.name} defined twice. "
              f"If you want to use the same bots, you give them different names")
 
-        members = vars(bot)
-        assert 'listener_func' in members, 'You have to set a listener or use different type of a bot'
-        assert 'handler_func' in members, 'You have to set a handler or use different type of a bot'
+        bot.assert_configured()
 
         self.__bots[bot.name] = bot
 

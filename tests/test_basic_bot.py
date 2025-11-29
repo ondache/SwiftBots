@@ -3,13 +3,13 @@ import asyncio
 import pytest
 
 from swiftbots import Bot, SwiftBots
-from swiftbots.admin_utils import shutdown_app
-from tests.common import close_test_app, run_raisable
+from tests.common import close_test_app, run_raisable, extract_exception_handler_middlewares
 
 global_dict = {}
 
 
 bot = Bot()
+extract_exception_handler_middlewares(bot)
 
 
 @bot.handler()
@@ -22,12 +22,11 @@ async def the_one_handler(value: str):
 
 @bot.listener()
 async def listen_async():
-    while True:
-        await asyncio.sleep(0)
-        test_value = 'Some value'
-        yield {
-            "value": test_value
-        }
+    await asyncio.sleep(0)
+    test_value = 'Some value'
+    yield {
+        "value": test_value
+    }
 
 
 class TestBasicBot:

@@ -4,7 +4,7 @@ import pytest
 
 from swiftbots import Bot, StubBot, SwiftBots
 from swiftbots.admin_utils import get_bot_names_async, shutdown_bot_async, start_bot_async
-from tests.common import close_test_app, run_raisable
+from tests.common import close_test_app, run_raisable, extract_exception_handler_middlewares
 
 STUB_BOT_NAME = 'bot1'
 ADMIN_BOT_NAME = 'admin'
@@ -17,6 +17,7 @@ class TestAdminUtils:
         app = SwiftBots()
 
         bot = Bot(name=ADMIN_BOT_NAME)
+        extract_exception_handler_middlewares(bot)
         bots_list = set()
 
         @bot.handler()
@@ -29,9 +30,8 @@ class TestAdminUtils:
 
         @bot.listener()
         async def listen():
-            while True:
-                await asyncio.sleep(0)
-                yield {}
+            await asyncio.sleep(0)
+            yield {}
 
         app.add_bots([
             bot,
@@ -48,6 +48,7 @@ class TestAdminUtils:
         app = SwiftBots()
 
         bot = Bot(name=ADMIN_BOT_NAME)
+        extract_exception_handler_middlewares(bot)
         bots_list = tuple()
 
         @bot.handler()
@@ -59,9 +60,8 @@ class TestAdminUtils:
 
         @bot.listener()
         async def listen():
-            while True:
-                await asyncio.sleep(0)
-                yield {}
+            await asyncio.sleep(0)
+            yield {}
 
         app.add_bots([
             bot,
@@ -78,6 +78,7 @@ class TestAdminUtils:
         app = SwiftBots()
 
         bot = Bot(name=ADMIN_BOT_NAME)
+        extract_exception_handler_middlewares(bot)
         bots_list = set()
 
         @bot.handler()
@@ -90,9 +91,8 @@ class TestAdminUtils:
 
         @bot.listener()
         async def listen():
-            while True:
-                await asyncio.sleep(0)
-                yield {}
+            await asyncio.sleep(0)
+            yield {}
 
         app.add_bots([
             bot,

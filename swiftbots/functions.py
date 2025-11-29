@@ -44,10 +44,14 @@ def resolve_function_args(function: Callable[..., Any], given_data: dict) -> dic
 
 
 def decompose_bot_as_dependencies(bot: Bot) -> dict[str, Any]:
-    return {
+    deps: dict[str, Any] = {
         'name': bot.name,
         'logger': bot.logger,
+        'bot': bot,
+        'handler': bot.handler_func
     }
+    deps['all_deps'] = deps
+    return deps
 
 
 

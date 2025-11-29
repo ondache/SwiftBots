@@ -25,7 +25,6 @@ from swiftbots.message_handlers import (
     CompiledChatCommand,
     Trie,
     compile_chat_commands,
-    handle_message,
     insert_trie,
 )
 from swiftbots.tasks.tasks import TaskInfo
@@ -39,8 +38,10 @@ from swiftbots.middlewares import (
     process_listener_exceptions,
     execute_listener,
     process_handler_exceptions,
-    resolve_deps,
-    call_handler
+    call_with_dependencies_injected,
+    route_chat_message,
+    load_dependencies,
+    load_chat_dependencies
 )
 
 
@@ -67,6 +68,7 @@ class Bot:
         self.run_at_start: bool = run_at_start
         self._custom_middlewares: list[Middleware] | None = middlewares
         self._user_middlewares: list[Middleware] = []
+        self._configure_middlewares()
         bot_logger_factory = bot_logger_factory or SysIOLoggerFactory()
         self.__logger: ILogger = bot_logger_factory.get_logger()
         self.__logger.bot_name = self.name
@@ -134,9 +136,15 @@ class Bot:
     def middleware(self) -> Callable[[Middleware], Middleware]:
         def wrapper(func: Middleware) -> Middleware:
             self._user_middlewares.append(func)
+            self._configure_middlewares()
             return func
 
         return wrapper
+
+    def assert_configured(self) -> None:
+        members = vars(self)
+        assert 'listener_func' in members, 'You have to set a listener or use different type of a bot'
+        assert 'handler_func' in members, 'You have to set a handler or use different type of a bot'
 
     async def before_start_async(self) -> None:
         """
@@ -145,6 +153,12 @@ class Bot:
         Use it like `super().before_start_async()`.
         """
         # TODO: do assert, check if listener_func is exist in self
+        ...
+
+    async def before_close_async(self) -> None:
+        ...
+
+    def _configure_middlewares(self) -> None:
         if self._custom_middlewares is not None:
             self._middlewares = self._custom_middlewares
         else:
@@ -152,13 +166,10 @@ class Bot:
                 process_listener_exceptions,
                 execute_listener,
                 process_handler_exceptions,
-                resolve_deps,
+                load_dependencies,
                 *self._user_middlewares,
-                call_handler
+                call_with_dependencies_injected,
             ]
-
-    async def before_close_async(self) -> None:
-        ...
 
 
 class StubBot(Bot):
@@ -202,26 +213,18 @@ class ChatBot(Bot):
                  chat_refuse_message: str = "Access forbidden",
                  admin: int | str | None = None,
                  run_at_start = True,
+                 middlewares: list[Middleware] | None = None
                  ):
-        super().__init__(name=name, bot_logger_factory=bot_logger_factory, run_at_start=run_at_start)
-        self._message_handlers = list()
+        super().__init__(name=name,
+                         bot_logger_factory=bot_logger_factory,
+                         run_at_start=run_at_start,
+                         middlewares=middlewares)
+        self._message_handlers = []
         self._admin = admin
         self._trie = {}
-
-        def handler(message: str, sender: str | int, all_deps: dict[str, Any]) -> Coroutine:
-            chat = Chat(
-                sender=sender,
-                message=message,
-                function_sender=self._sender_func,
-                logger=self.logger,
-                error_message=chat_error_message,
-                unknown_message=chat_unknown_error_message,
-                refuse_message=chat_refuse_message
-            )
-            all_deps['chat'] = chat
-            return self.overridden_handler(message=message, chat=chat, all_deps=all_deps)
-
-        self.handler_func = handler
+        self._chat_error_message: str = chat_error_message,
+        self._chat_unknown_message: str = chat_unknown_error_message,
+        self._chat_refuse_message: str = chat_refuse_message
 
     def message_handler(self,
                         commands: list[str],
@@ -267,8 +270,10 @@ class ChatBot(Bot):
             whitelist_users=whitelist_users,
             blacklist_users=blacklist_users)
 
-    def overridden_handler(self, message: str, chat: Chat, all_deps: dict[str, Any]) -> Coroutine:
-        return handle_message(message, chat, self._trie, all_deps, self)
+    def assert_configured(self) -> None:
+        members = vars(self)
+        assert 'listener_func' in members, 'You have to set a listener or use different type of a bot'
+        assert len(self._message_handlers) > 0, 'You have to set at least one message handler or default handler'
 
     async def before_start_async(self) -> None:
         await super().before_start_async()
@@ -277,6 +282,35 @@ class ChatBot(Bot):
         self._message_handlers.clear()
         for command in self._compiled_chat_commands:
             insert_trie(self._trie, command.command_name.lower(), command)
+
+    def handler_func(self) -> None:
+        raise NotImplementedError("You should use message handler or default handler for ChatBot")
+
+    def _configure_middlewares(self) -> None:
+        if self._custom_middlewares is not None:
+            self._middlewares = self._custom_middlewares
+        else:
+            self._middlewares = [
+                process_listener_exceptions,
+                execute_listener,
+                process_handler_exceptions,
+                load_dependencies,
+                load_chat_dependencies,
+                route_chat_message,
+                *self._user_middlewares,
+                call_with_dependencies_injected,
+            ]
+
+    def _make_chat(self, sender, message) -> Chat:
+        return Chat(
+            sender=sender,
+            message=message,
+            function_sender=self._sender_func,
+            logger=self.logger,
+            error_message=self._chat_error_message,
+            unknown_message=self._chat_unknown_message,
+            refuse_message=self._chat_refuse_message
+        )
 
 
 class TelegramBot(ChatBot):
@@ -327,6 +361,7 @@ class TelegramBot(ChatBot):
                 refuse_message=chat_refuse_message,
             )
             all_deps['chat'] = chat
+            # TODO: todo
             return self.overridden_handler(message, chat, all_deps)
 
         self.handler_func = handler
