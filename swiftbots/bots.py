@@ -302,7 +302,7 @@ class ChatBot(Bot):
                 call_with_dependencies_injected,
             ]
 
-    def _make_chat(self, sender, message) -> Chat:
+    def _make_chat(self, sender: str | int, message: str) -> Chat:
         return Chat(
             sender=sender,
             message=message,
