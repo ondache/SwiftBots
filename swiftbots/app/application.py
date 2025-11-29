@@ -12,6 +12,7 @@ from swiftbots.tasks.schedulers import SimpleScheduler
 class SwiftBots:
     def __init__(self,
                  logger_factory: ILoggerFactory | None = None,
+                 run_with: dict[str, Any] | None = None,
                  scheduler: IScheduler | None = None,
                  runner: Callable[[AppContainer], Any] | None = None
                  ):
@@ -22,6 +23,7 @@ class SwiftBots:
         self.__bots: dict[str, Bot] = {}
         self.__logger_factory: ILoggerFactory = logger_factory or SysIOLoggerFactory()
         self.__logger: ILogger = self.__logger_factory.get_logger()
+        self.__run_with: dict[str, Any] = run_with or dict()
         self.__scheduler: IScheduler = scheduler or SimpleScheduler()
         self.__runner: Callable[[AppContainer], Any] = runner or run_async
 
@@ -56,6 +58,6 @@ class SwiftBots:
         bots = list(self.__bots.values())
 
         build_scheduler(bots, self.__scheduler)
-        app_container = AppContainer(bots, self.__logger, self.__scheduler)
+        app_container = AppContainer(bots, self.__logger, self.__scheduler, self.__run_with)
 
         self.__runner(app_container)

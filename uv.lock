@@ -1053,7 +1053,7 @@ wheels = [
 
 [[package]]
 name = "swiftbots"
-version = "0.1.7.dev0"
+version = "0.2.0.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },

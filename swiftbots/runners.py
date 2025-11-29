@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from typing import Any
 
 from swiftbots.all_types import (
     ExitApplicationException,
@@ -137,3 +138,17 @@ async def start_async_loop(app_container: AppContainer) -> None:
 
 def run_async(container: AppContainer) -> None:
     asyncio.run(start_async_loop(container))
+
+
+async def run_oneshot_async(container: AppContainer) -> None:
+    assert len(container.bots) == 1, 'Only one bot is allowed to run oneshot'
+    bot = container.bots[0]
+    message = container.run_with
+    await bot.before_start_async()
+    entry = compose_middlewares(bot, bot._middlewares)
+    await entry(message)
+    await bot.before_close_async()
+
+
+def run_oneshot(container: AppContainer) -> None:
+    asyncio.run(run_oneshot_async(container))
