@@ -2,6 +2,7 @@ import asyncio
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from typing import Any, TypeVar
 from traceback import format_exc
+from textwrap import wrap
 
 import httpx
 
@@ -367,9 +368,8 @@ class TelegramBot(ChatBot):
         self.handler_func = handler
 
     async def _send_async(self, message: str, user: str | int) -> dict:
-        messages = [message[i: i + 4096] for i in range(0, len(message), 4096)]
         result = {}
-        for msg in messages:
+        for msg in wrap(message, 4096):
             send_data = {"chat_id": user, "text": msg}
             result = await self.fetch_async("sendMessage", send_data)
         return result
