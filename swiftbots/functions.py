@@ -2,7 +2,6 @@ import inspect
 import random
 import string
 from collections.abc import Callable
-from traceback import format_exc
 from typing import TYPE_CHECKING, Any
 
 from swiftbots.types import DependencyContainer

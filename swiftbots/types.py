@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator, Callable, Coroutine
-from typing import Any, TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, TypeVar
+
 if TYPE_CHECKING:
     from swiftbots.bots import Bot
 

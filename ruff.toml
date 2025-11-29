@@ -4,7 +4,7 @@ target-version = "py310"
 
 [lint]
 extend-select = [
-#    "ALL",
+    "ALL",
     "F",
     "I",
     "ASYNC",
@@ -24,7 +24,8 @@ ignore = [
     "ANN003",
     # single quota demand
     "Q000",
-    "UP006"
+    "UP006",
+    "ANN401", # type hint Any
 ]
 
 [format]

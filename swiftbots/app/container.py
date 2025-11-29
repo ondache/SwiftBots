@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 
 class AppContainer:
-    def __init__(self, bots: list['Bot'], logger: 'ILogger', scheduler: 'IScheduler', run_with=dict[str, Any]) -> None:
+    def __init__(self, bots: list['Bot'], logger: 'ILogger', scheduler: 'IScheduler', run_with: dict[str, Any]) -> None:
         self.bots = bots
         self.logger = logger
         self.scheduler = scheduler

@@ -1,32 +1,37 @@
 import asyncio
+from collections.abc import AsyncGenerator, Coroutine
 from traceback import format_exc
-from typing import Any, TYPE_CHECKING
-from collections.abc import Coroutine, AsyncGenerator
+from typing import TYPE_CHECKING, Any
 
+from swiftbots.all_types import ExitBotException, RestartListeningException
 from swiftbots.functions import decompose_bot_as_dependencies, resolve_function_args
+from swiftbots.message_handlers import is_user_allowed, search_best_command_match
+from swiftbots.types import CallNextMiddleware, Middleware
 from swiftbots.utils import error_rate_monitors
-from swiftbots.types import Middleware, CallNextMiddleware
-from swiftbots.all_types import RestartListeningException, ExitBotException
-from swiftbots.message_handlers import search_best_command_match, is_user_allowed
+
 if TYPE_CHECKING:
     from swiftbots.bots import Bot, ChatBot, TelegramBot
 
 
 def make_layer(bot: 'Bot', cur_layer: Middleware, next_layer: CallNextMiddleware) -> CallNextMiddleware:
-    def layer(obj) -> Coroutine:
+    def layer(obj: Any) -> Coroutine:
         return cur_layer(bot, obj, next_layer)
     return layer
 
 
 def compose_middlewares(bot: 'Bot', middlewares: list[Middleware]) -> CallNextMiddleware:
-    next_callable = lambda _: _
+    next_callable: CallNextMiddleware = lambda x: x  # noqa: E731
 
     for middleware in reversed(middlewares):
         next_callable = make_layer(bot, middleware, next_callable)
     return next_callable
 
 
-async def process_listener_exceptions(bot: 'Bot', listen_generator: AsyncGenerator, call_next: CallNextMiddleware) -> AsyncGenerator:
+async def process_listener_exceptions(
+        bot: 'Bot',
+        listen_generator: AsyncGenerator,
+        call_next: CallNextMiddleware
+) -> AsyncGenerator:
     """
     The middleware prevents non-base exceptions from stopping the app.
     Caught exceptions are logged and processed accordingly to its type.
@@ -61,7 +66,7 @@ async def process_listener_exceptions(bot: 'Bot', listen_generator: AsyncGenerat
         return bot.listener_func()
 
 
-async def execute_listener(_, listen_generator: AsyncGenerator, call_next: CallNextMiddleware) -> Any:
+async def execute_listener(bot: 'Bot', listen_generator: AsyncGenerator, call_next: CallNextMiddleware) -> Any:
     """
     The middleware extracts the request from the bot listener and passes it to the next middleware.
     """
@@ -90,7 +95,7 @@ async def load_dependencies(bot: 'Bot', output: dict, call_next: CallNextMiddlew
     return await call_next(deps)
 
 
-async def call_with_dependencies_injected(_, deps: dict, __) -> Any:
+async def call_with_dependencies_injected(bot: 'Bot', deps: dict, call_next: CallNextMiddleware) -> Any:
     handler = deps['handler']
     args = resolve_function_args(handler, deps)
     return await handler(**args)

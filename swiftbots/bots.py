@@ -1,8 +1,8 @@
 import asyncio
-from collections.abc import AsyncGenerator, Callable, Coroutine
-from typing import Any, TypeVar
-from traceback import format_exc
+from collections.abc import AsyncGenerator, Callable
 from textwrap import wrap
+from traceback import format_exc
+from typing import Any, TypeVar
 
 import httpx
 
@@ -28,23 +28,18 @@ from swiftbots.message_handlers import (
     compile_chat_commands,
     insert_trie,
 )
-from swiftbots.tasks.tasks import TaskInfo
-from swiftbots.types import (
-    AsyncListenerFunction,
-    AsyncSenderFunction,
-    DecoratedCallable,
-    Middleware
-)
 from swiftbots.middlewares import (
-    process_listener_exceptions,
-    execute_listener,
-    process_handler_exceptions,
     call_with_dependencies_injected,
-    route_chat_message,
-    load_dependencies,
-    load_chat_dependencies,
     deconstruct_telegram_message,
+    execute_listener,
+    load_chat_dependencies,
+    load_dependencies,
+    process_handler_exceptions,
+    process_listener_exceptions,
+    route_chat_message,
 )
+from swiftbots.tasks.tasks import TaskInfo
+from swiftbots.types import AsyncListenerFunction, AsyncSenderFunction, DecoratedCallable, Middleware
 
 
 class Bot:
@@ -58,7 +53,7 @@ class Bot:
             self,
             name: str | None = None,
             bot_logger_factory: ILoggerFactory | None = None,
-            run_at_start = True,
+            run_at_start: bool = True,
             middlewares: list[Middleware] | None = None
     ):
         assert bot_logger_factory is None or isinstance(
@@ -179,7 +174,7 @@ class StubBot(Bot):
     def __init__(self,
                  name: str | None = None,
                  bot_logger_factory: ILoggerFactory | None = None,
-                 run_at_start = True,
+                 run_at_start: bool = True,
                  ):
         super().__init__(name=name, bot_logger_factory=bot_logger_factory, run_at_start=run_at_start)
         self.listener_func = self.stub_listener
@@ -211,7 +206,7 @@ class ChatBot(Bot):
                  chat_unknown_error_message: str = "Unknown command",
                  chat_refuse_message: str = "Access forbidden",
                  admin: int | str | None = None,
-                 run_at_start = True,
+                 run_at_start: bool = True,
                  middlewares: list[Middleware] | None = None
                  ):
         super().__init__(name=name,
@@ -231,10 +226,13 @@ class ChatBot(Bot):
                         whitelist_users: list[str | int] | None = None,
                         blacklist_users: list[str | int] | None = None) -> DecoratedCallable:
         """
-        :param commands: commands, that will fire the method. For example: ['add', '+']. Message "add 2 2" will execute in this method.
+        :param commands: commands, that will fire the method. For example: ['add', '+'].
+        Message "add 2 2" will execute in this method.
         :param admin_only: only admin will be able to use this command. If True, whitelist_users list will be ignored.
-        :param whitelist_users: the only users from the list will be able to use this command. If admin_only = True, then whitelist_users will be ignored.
-        :param blacklist_users: the users from list won't be able to use this command. blacklist has a privilege upon whitelist.
+        :param whitelist_users: the only users from the list will be able to use this command. If admin_only = True,
+        then whitelist_users will be ignored.
+        :param blacklist_users: the users from list won't be able to use this command.
+        blacklist has a privilege upon whitelist.
         """
         assert isinstance(commands, list), 'Commands must be a list of strings'
         assert len(commands) > 0, 'Empty list of commands'
@@ -326,7 +324,7 @@ class TelegramBot(ChatBot):
                  chat_error_message: str = "Error occurred",
                  chat_unknown_error_message: str = "Unknown command",
                  chat_refuse_message: str = "Access forbidden",
-                 run_at_start = True,
+                 run_at_start: bool = True,
                  middlewares: list[Middleware] | None = None,
                  ):
         super().__init__(name=name,

@@ -4,7 +4,6 @@ from typing import Union
 from swiftbots.c_ext import search_ext
 from swiftbots.types import DecoratedCallable
 
-
 FINAL_INDICATOR = '**'
 
 

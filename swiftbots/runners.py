@@ -1,6 +1,5 @@
 import asyncio
 import sys
-from typing import Any
 
 from swiftbots.all_types import (
     ExitApplicationException,
@@ -12,8 +11,7 @@ from swiftbots.all_types import (
 from swiftbots.app.container import AppContainer
 from swiftbots.bots import Bot, build_scheduler, stop_bot_async
 from swiftbots.middlewares import compose_middlewares
-from swiftbots.utils import error_rate_monitors, ErrorRateMonitor
-
+from swiftbots.utils import ErrorRateMonitor, error_rate_monitors
 
 __ALL_TASKS: set[str] = set()
 __SCHEDULER_TASK_NAME = '__sched__'

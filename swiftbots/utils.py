@@ -2,9 +2,6 @@ import time
 from contextvars import ContextVar
 
 
-error_rate_monitors: ContextVar[ErrorRateMonitor]  = ContextVar('error_rate_monitors')
-
-
 class ErrorRateMonitor:
     def __init__(self, cooldown: int = 60):
         self.start_time = time.time()
@@ -27,3 +24,6 @@ class ErrorRateMonitor:
     @property
     def since_start(self) -> float:
         return time.time() - self.start_time
+
+
+error_rate_monitors: ContextVar[ErrorRateMonitor]  = ContextVar('error_rate_monitors')
