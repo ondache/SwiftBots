@@ -160,10 +160,7 @@ class Bot:
         ...
 
     def _configure_middlewares(self) -> None:
-        if self._custom_middlewares is not None:
-            self._middlewares = self._custom_middlewares
-        else:
-            self._middlewares = [
+        self._middlewares = self._custom_middlewares or [
                 process_listener_exceptions,
                 execute_listener,
                 process_handler_exceptions,
@@ -288,10 +285,7 @@ class ChatBot(Bot):
         raise NotImplementedError("You should use message handler or default handler for ChatBot")
 
     def _configure_middlewares(self) -> None:
-        if self._custom_middlewares is not None:
-            self._middlewares = self._custom_middlewares
-        else:
-            self._middlewares = [
+        self._middlewares = self._custom_middlewares or [
                 process_listener_exceptions,
                 execute_listener,
                 process_handler_exceptions,
