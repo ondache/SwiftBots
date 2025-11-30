@@ -5,27 +5,34 @@ target-version = "py310"
 [lint]
 extend-select = [
     "ALL",
-    "F",
-    "I",
-    "ASYNC",
-    "W",
-    "E",
-    "UP",
-    "ANN",
-    "T20",
 ]
 
 ignore = [
-    # annotate `__init__` ???????
-    "ANN204",
-    # annotate *args :/
-    "ANN002",
-    # annotate **kwargs ...
-    "ANN003",
-    # single quota demand
-    "Q000",
-    "UP006",
+    "ANN204", # annotate `__init__` ???????
+    "ANN002", # annotate *args :/
+    "ANN003", # annotate **kwargs ...
+    "Q000", # single quota demand
     "ANN401", # type hint Any
+    "BLE001", # too bload exceptions
+
+    # todo
+    "LOG",
+    "B024",
+    "C901",
+    # todo check
+    "D",
+    "PT",
+    "FIX",
+    "S",
+    "TD",
+    "FBT",
+    "SLF",
+    "BLE",
+    "RUF",
+    "SIM",
+    "DTZ",
+    "PLW",
+    "PLR",
 ]
 
 [format]

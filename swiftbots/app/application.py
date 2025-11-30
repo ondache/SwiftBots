@@ -23,7 +23,7 @@ class SwiftBots:
         self.__bots: dict[str, Bot] = {}
         self.__logger_factory: ILoggerFactory = logger_factory or SysIOLoggerFactory()
         self.__logger: ILogger = self.__logger_factory.get_logger()
-        self.__run_with: dict[str, Any] = run_with or dict()
+        self.__run_with: dict[str, Any] = run_with or {}
         self.__scheduler: IScheduler = scheduler or SimpleScheduler()
         self.__runner: Callable[[AppContainer], Any] = runner or run_async
 
@@ -45,7 +45,8 @@ class SwiftBots:
         elif isinstance(bots, Bot):
             self.add_bot(bots)
         else:
-            raise AssertionError('bots must be a type of a list of Bot or an inherited class')
+            msg = 'bots must be a type of a list of Bot or an inherited class'
+            raise TypeError(msg)
 
     def run(self) -> None:
         """Start application to listen to or execute all the bots

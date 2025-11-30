@@ -62,7 +62,7 @@ class Bot:
             bot_logger_factory, ILoggerFactory,
         ), "Logger must be of type ILoggerFactory"
 
-        self.task_infos: list[TaskInfo] = list()
+        self.task_infos: list[TaskInfo] = []
         self.name: str = name or generate_name()
         self.run_at_start: bool = run_at_start
         self._custom_middlewares: list[Middleware] | None = middlewares
@@ -213,8 +213,8 @@ class ChatBot(Bot):
         self._message_handlers = []
         self._admin = admin
         self._trie = {}
-        self._chat_error_message: str = chat_error_message,
-        self._chat_unknown_message: str = chat_unknown_error_message,
+        self._chat_error_message: str = chat_error_message
+        self._chat_unknown_message: str = chat_unknown_error_message
         self._chat_refuse_message: str = chat_refuse_message
 
     def message_handler(self,
@@ -277,7 +277,8 @@ class ChatBot(Bot):
             insert_trie(self._trie, command.command_name.lower(), command)
 
     def handler_func(self) -> None:
-        raise NotImplementedError("You should use message handler or default handler for ChatBot")
+        msg = "You should use message handler or default handler for ChatBot"
+        raise NotImplementedError(msg)
 
     def _configure_middlewares(self) -> None:
         self._middlewares = self._custom_middlewares or [
@@ -380,19 +381,15 @@ class TelegramBot(ChatBot):
                 )
                 answer = response.json()
             if not answer["ok"]:
-                raise RestartListeningException()
+                raise RestartListeningException
         return answer
 
     async def telegram_listener(self) -> AsyncGenerator[dict, None]:
         if self.__first_time_launched and self.__greeting_enabled and self._admin is not None:
             await self._sender_func(f"{self.name} is started!", self._admin)
-        while True:
-            try:
-                async for update in self._get_updates_async():
-                    yield update
 
-            except httpx.ConnectError:
-                await self._handle_server_connection_error_async()
+        async for update in self._get_updates_async():
+            yield update
 
     def _configure_middlewares(self) -> None:
         self._middlewares = self._custom_middlewares or [
@@ -422,16 +419,19 @@ class TelegramBot(ChatBot):
             self.first_time_launched = False
             data["offset"] = await self._skip_old_updates_async()
         while True:
-            ans = await self.fetch_async("getUpdates", data, ignore_errors=True, timeout=timeout*2)
+            try:
+                ans = await self.fetch_async("getUpdates", data, ignore_errors=True, timeout=timeout*2)
+            except httpx.ConnectError:
+                await self._handle_server_connection_error_async()
+                continue
             if not ans["ok"]:
                 state = await self._handle_error_async(ans)
                 if state == 0:
                     await asyncio.sleep(5)
                     continue
                 else:
-                    raise ExitBotException(
-                        f"Error {ans} while recieving long polling server",
-                    )
+                    msg = f"Error {ans} while receiving long polling server"
+                    raise ExitBotException(msg)
             if len(ans["result"]) != 0:
                 data["offset"] = ans["result"][0]["update_id"] + 1
                 yield ans
@@ -460,7 +460,7 @@ class TelegramBot(ChatBot):
         # unauthorized
         if error_code == 401:
             await self.logger.critical_async(msg)
-            raise ExitBotException()
+            raise ExitBotException
         if error_code == 409:
             msg = (
                 "Error code 409. Another telegram instance is working. "
@@ -498,7 +498,6 @@ def build_task_caller(info: TaskInfo, bot: Bot) -> Callable[..., Any]:
                 min_deps = decompose_bot_as_dependencies(bot)
                 args = resolve_function_args(func, min_deps)
                 return await func(**args)
-            return None
         except (AttributeError, TypeError, KeyError, AssertionError) as e:
             await bot.logger.critical_async(
                 f"Fix the code. Critical `{e.__class__.__name__}` "
@@ -509,6 +508,8 @@ def build_task_caller(info: TaskInfo, bot: Bot) -> Callable[..., Any]:
                 f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}` "
                 f"and kept on working:\n{e}.\nFull traceback:\n{format_exc()}",
             )
+        else:
+            return None
 
     def wrapped_caller() -> Any:
         return caller()
@@ -529,8 +530,7 @@ def build_scheduler(bots: list[Bot], scheduler: IScheduler) -> None:
 def disable_tasks(bot: Bot, scheduler: IScheduler) -> None:
     """Method is used to disable tasks when the bot is exiting or disabling."""
     scheduled_tasks = scheduler.list_tasks()
-    bot_tasks = map(lambda ti: ti.name, bot.task_infos)
-    for bot_task in bot_tasks:
+    for bot_task in (ti.name for ti in bot.task_infos):
         if bot_task in scheduled_tasks:
             scheduler.remove_task(bot_task)
 

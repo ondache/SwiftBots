@@ -80,7 +80,7 @@ def compile_command_as_regex(name: str) -> re.Pattern:
 def compile_chat_commands(
     handlers: list[ChatMessageHandler],
 ) -> list[CompiledChatCommand]:
-    compiled_commands = [
+    return [
         CompiledChatCommand(
             command_name=command,
             method=handler.function,
@@ -91,7 +91,6 @@ def compile_chat_commands(
         for handler in handlers
         for command in handler.commands
     ]
-    return compiled_commands
 
 
 def is_user_allowed(user: str | int,

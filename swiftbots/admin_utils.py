@@ -9,7 +9,8 @@ from swiftbots.runners import get_all_tasks
 
 
 def shutdown_app() -> None:
-    raise ExitApplicationException("Exited from administrator")
+    msg = "Exited from administrator"
+    raise ExitApplicationException(msg)
 
 
 async def shutdown_bot_async(bot_name: str) -> bool:
@@ -19,7 +20,7 @@ async def shutdown_bot_async(bot_name: str) -> bool:
     :return: True if the bot was stopped, False if not found
     """
     bot_name = bot_name.casefold()
-    if bot_name not in map(lambda name: name.casefold(), get_all_tasks()):
+    if bot_name not in (name.casefold() for name in get_all_tasks()):
         return False
     tasks = asyncio.all_tasks()
     found = filter(lambda t: t.get_name().casefold() == bot_name, tasks)
@@ -31,7 +32,7 @@ async def shutdown_bot_async(bot_name: str) -> bool:
 
 
 async def get_bot_names_async() -> tuple[set[str], set[str], set[str]]:
-    """:returns: 1. a set of all the tasks in app;
+    """:returns: 1. a set of all the tasks in the app;
     2. set of running tasks;
     3. set of stopped tasks
     """

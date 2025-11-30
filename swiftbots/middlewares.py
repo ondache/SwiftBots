@@ -40,11 +40,6 @@ async def process_listener_exceptions(
     err_monitor = error_rate_monitors.get()
     try:
         await call_next(listen_generator)
-        return listen_generator
-    # except (AttributeError, TypeError, KeyError, AssertionError) as e:
-    #     await bot.logger.critical_async(f"Fix the code! Critical {e.__class__.__name__} "
-    #                                     f"raised: {e}. Full traceback:\n{format_exc()}")
-    #     continue
     except RestartListeningException:
         return bot.listener_func()
     except Exception as e:
@@ -53,19 +48,19 @@ async def process_listener_exceptions(
             f" and kept listening on:\n{e}.\nFull traceback:\n{format_exc()}",
         )
         if err_monitor.since_start < 3:
-            raise ExitBotException(
-                f"Bot {bot.name} raises immediately after start listening. "
-                "Stopping the bot.",
-            )
+            msg = f"Bot {bot.name} raises immediately after start listening. Stopping the bot."
+            raise ExitBotException(msg) from e
         rate = err_monitor.evoke()
         if rate > 5:
             await bot.logger.error_async(f"Bot {bot.name} sleeps for 30 seconds.")
             await asyncio.sleep(30)
             err_monitor.error_count = 3
         return bot.listener_func()
+    else:
+        return listen_generator
 
 
-async def execute_listener(bot: 'Bot', listen_generator: AsyncGenerator, call_next: CallNextMiddleware) -> Any:
+async def execute_listener(_: 'Bot', listen_generator: AsyncGenerator, call_next: CallNextMiddleware) -> Any:
     """The middleware extracts the request from the bot listener and passes it to the next middleware.
     """
     output = await listen_generator.__anext__()
@@ -93,7 +88,7 @@ async def load_dependencies(bot: 'Bot', output: dict, call_next: CallNextMiddlew
     return await call_next(deps)
 
 
-async def call_with_dependencies_injected(bot: 'Bot', deps: dict, call_next: CallNextMiddleware) -> Any:
+async def call_with_dependencies_injected(_: 'Bot', deps: dict, __: CallNextMiddleware) -> Any:
     handler = deps['handler']
     args = resolve_function_args(handler, deps)
     return await handler(**args)

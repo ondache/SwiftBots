@@ -34,14 +34,15 @@ def resolve_function_args(function: Callable[..., Any], given_data: dict) -> dic
             result = dep_func(**dep_args)
             args[name] = result
         elif name not in given_data:
-            raise AssertionError(f"Can't use parameter {param}")
+            msg = f"Can't use parameter {param}"
+            raise AssertionError(msg)
         else:  # simple parameter
             args[name] = given_data[name]
 
     return args
 
 
-def decompose_bot_as_dependencies(bot: Bot) -> dict[str, Any]:
+def decompose_bot_as_dependencies(bot: 'Bot') -> dict[str, Any]:
     deps: dict[str, Any] = {
         'name': bot.name,
         'logger': bot.logger,
