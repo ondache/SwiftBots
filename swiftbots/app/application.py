@@ -12,9 +12,8 @@ from swiftbots.tasks.schedulers import SimpleScheduler
 class SwiftBots:
     def __init__(self,
                  logger_factory: ILoggerFactory | None = None,
-                 run_with: dict[str, Any] | None = None,
                  scheduler: IScheduler | None = None,
-                 runner: Callable[[AppContainer], Any] | None = None,
+                 runner: Callable[[AppContainer, ...], Any] | None = None,
                  ):
         assert logger_factory is None or isinstance(
             logger_factory, ILoggerFactory,
@@ -23,9 +22,8 @@ class SwiftBots:
         self.__bots: dict[str, Bot] = {}
         self.__logger_factory: ILoggerFactory = logger_factory or SysIOLoggerFactory()
         self.__logger: ILogger = self.__logger_factory.get_logger()
-        self.__run_with: dict[str, Any] = run_with or {}
         self.__scheduler: IScheduler = scheduler or SimpleScheduler()
-        self.__runner: Callable[[AppContainer], Any] = runner or run_async
+        self.__runner: Callable[[AppContainer, ...], Any] = runner or run_async
 
     def add_bot(self, bot: Bot) -> None:
         assert isinstance(bot, Bot), "Bot must be of type Bot or an inherited class"
@@ -48,7 +46,7 @@ class SwiftBots:
             msg = 'bots must be a type of a list of Bot or an inherited class'
             raise TypeError(msg)
 
-    def run(self) -> None:
+    def run(self, *args, scheduler_enabled=True, **kwargs) -> None:
         """Start application to listen to or execute all the bots
         """
         if len(self.__bots) == 0:
@@ -57,7 +55,8 @@ class SwiftBots:
 
         bots = list(self.__bots.values())
 
-        build_scheduler(bots, self.__scheduler)
-        app_container = AppContainer(bots, self.__logger, self.__scheduler, self.__run_with)
+        if scheduler_enabled == True:
+            build_scheduler(bots, self.__scheduler)
+        app_container = AppContainer(bots, self.__logger, self.__scheduler)
 
-        self.__runner(app_container)
+        self.__runner(app_container, *args, **kwargs)
