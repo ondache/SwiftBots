@@ -1,3 +1,4 @@
+from textwrap import wrap
 from collections.abc import Callable
 
 from swiftbots.all_types import ILogger
@@ -88,7 +89,16 @@ class TelegramChat(Chat):
         if data is None:
             data = {}
 
-        messages = [message[i: i + 4096] for i in range(0, len(message), 4096)]
+        messages = wrap(
+                message,
+                4096,
+                expand_tabs=True,
+                replace_whitespace=True,
+                fix_sentence_endings=False,
+                break_long_words=True,
+                break_on_hyphens=True,
+                drop_whitespace=True,
+        )
         result = {}
         for msg in messages:
             send_data = {"chat_id": user, "text": msg}

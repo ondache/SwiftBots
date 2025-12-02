@@ -363,7 +363,16 @@ class TelegramBot(ChatBot):
 
     async def _send_async(self, message: str, user: str | int) -> dict:
         result = {}
-        for msg in wrap(message, 4096):
+        for msg in wrap(
+                message,
+                4096,
+                expand_tabs=True,
+                replace_whitespace=True,
+                fix_sentence_endings=False,
+                break_long_words=True,
+                break_on_hyphens=True,
+                drop_whitespace=True,
+        ):
             send_data = {"chat_id": user, "text": msg}
             result = await self.fetch_async("sendMessage", send_data)
         return result
