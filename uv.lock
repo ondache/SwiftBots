@@ -1281,7 +1281,7 @@ wheels = [
 
 [[package]]
 name = "swiftbots"
-version = "0.2.1"
+version = "0.2.2"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -1290,6 +1290,7 @@ dependencies = [
 [package.optional-dependencies]
 examples = [
     { name = "alembic" },
+    { name = "azure-functions" },
     { name = "grpcio" },
     { name = "grpcio-tools" },
     { name = "sqlalchemy" },
@@ -1299,7 +1300,6 @@ examples = [
 dev = [
     { name = "aiosqlite" },
     { name = "artifacts-keyring" },
-    { name = "azure-functions" },
     { name = "black" },
     { name = "keyring" },
     { name = "mypy" },
@@ -1312,6 +1312,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", marker = "extra == 'examples'", specifier = ">=0.0.0" },
+    { name = "azure-functions", marker = "extra == 'examples'", specifier = ">=0.0.0" },
     { name = "grpcio", marker = "extra == 'examples'", specifier = ">=0.0.0" },
     { name = "grpcio-tools", marker = "extra == 'examples'", specifier = ">=1.71.0" },
     { name = "httpx", specifier = ">=0.0.0" },
@@ -1323,7 +1324,6 @@ provides-extras = ["standard", "examples"]
 dev = [
     { name = "aiosqlite", specifier = ">=0.21.0" },
     { name = "artifacts-keyring", specifier = ">=0.4.0" },
-    { name = "azure-functions", specifier = ">=1.23.0" },
     { name = "black", specifier = ">=25.1.0" },
     { name = "keyring", specifier = ">=25.6.0" },
     { name = "mypy", specifier = ">=1.15.0" },
