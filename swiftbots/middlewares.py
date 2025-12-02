@@ -7,7 +7,7 @@ from swiftbots.all_types import ExitBotException, RestartListeningException
 from swiftbots.functions import decompose_bot_as_dependencies, resolve_function_args
 from swiftbots.message_handlers import is_user_allowed, search_best_command_match
 from swiftbots.types import CallNextMiddleware, Middleware
-from swiftbots.utils import error_rate_monitors, ErrorRateMonitor
+from swiftbots.utils import ErrorRateMonitor, error_rate_monitors
 
 if TYPE_CHECKING:
     from swiftbots.bots import Bot, ChatBot, TelegramBot

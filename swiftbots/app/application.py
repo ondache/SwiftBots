@@ -46,7 +46,7 @@ class SwiftBots:
             msg = 'bots must be a type of a list of Bot or an inherited class'
             raise TypeError(msg)
 
-    def run(self, *args, scheduler_enabled=True, **kwargs) -> None:
+    def run(self, *args, scheduler_enabled: bool = True, **kwargs) -> None:
         """Start application to listen to or execute all the bots
         """
         if len(self.__bots) == 0:
@@ -55,7 +55,7 @@ class SwiftBots:
 
         bots = list(self.__bots.values())
 
-        if scheduler_enabled == True:
+        if scheduler_enabled:
             build_scheduler(bots, self.__scheduler)
         app_container = AppContainer(bots, self.__logger, self.__scheduler)
 
