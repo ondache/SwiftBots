@@ -72,6 +72,7 @@ class Bot:
         self.__logger: ILogger = bot_logger_factory.get_logger()
         self.__logger.bot_name = self.name
         self.__is_enabled = True
+        self._built = False
 
     @property
     def logger(self) -> ILogger:
@@ -139,17 +140,25 @@ class Bot:
 
         return wrapper
 
+    def build(self) -> None:
+        """Build everything that is needed to run the bot.
+        Need to override this method.
+        Use it like `super().build()`.
+        """
+        self._built = True
+
     def assert_configured(self) -> None:
+        assert self._built is True, 'You have to call build() before running the bot'
         members = vars(self)
         assert 'listener_func' in members, 'You have to set a listener or use different type of a bot'
         assert 'handler_func' in members, 'You have to set a handler or use different type of a bot'
 
     async def before_start_async(self) -> None:
         """Do something right before the app starts.
+        Should be quick, because it runs every request when the app is started in serverless mode.
         Need to override this method.
         Use it like `super().before_start_async()`.
         """
-        # TODO: do assert, check if listener_func is exist in self
 
     async def before_close_async(self) -> None:
         ...
@@ -264,13 +273,13 @@ class ChatBot(Bot):
             blacklist_users=blacklist_users)
 
     def assert_configured(self) -> None:
+        assert self._built is True, 'You have to call build() before running the bot'
         members = vars(self)
         assert 'listener_func' in members, 'You have to set a listener or use different type of a bot'
-        assert len(self._message_handlers) > 0, 'You have to set at least one message handler or default handler'
+        assert len(self._compiled_chat_commands) > 0, 'You have to set at least one message handler or default handler'
 
-    async def before_start_async(self) -> None:
-        await super().before_start_async()
-        # TODO: do assert, check if listener_func is exist in self
+    def build(self) -> None:
+        super().build()
         self._compiled_chat_commands = compile_chat_commands(self._message_handlers)
         self._message_handlers.clear()
         for command in self._compiled_chat_commands:
@@ -479,14 +488,14 @@ class TelegramBot(ChatBot):
             return result[0]["update_id"] + 1
         return -1
 
+    def build(self) -> None:
+        super().build()
+        self.__http_session = httpx.AsyncClient()
+
     async def before_close_async(self) -> None:
         await super().before_close_async()
         if not self.__http_session.is_closed:
             await self.__http_session.aclose()
-
-    async def before_start_async(self) -> None:
-        await super().before_start_async()
-        self.__http_session = httpx.AsyncClient()
 
 
 def build_task_caller(info: TaskInfo, bot: Bot) -> Callable[..., Any]:

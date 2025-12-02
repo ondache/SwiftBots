@@ -32,6 +32,7 @@ class SwiftBots:
             (f"Bot with the name {bot.name} defined twice. "
              f"If you want to use the same bots, you give them different names")
 
+        bot.build()
         bot.assert_configured()
 
         self.__bots[bot.name] = bot
