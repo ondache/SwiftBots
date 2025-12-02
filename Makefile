@@ -24,4 +24,4 @@ publish:
 	uv sync --quiet
 	uv export -o pylock.toml --quiet --no-dev
 	uv build --quiet
-	uv run twine upload --skip-existing .\dist\*
+	uv run twine upload .\dist\*
