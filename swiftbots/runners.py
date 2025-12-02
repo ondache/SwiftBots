@@ -11,7 +11,6 @@ from swiftbots.all_types import (
 from swiftbots.app.container import AppContainer
 from swiftbots.bots import Bot, build_scheduler, stop_bot_async
 from swiftbots.middlewares import compose_middlewares
-from swiftbots.utils import ErrorRateMonitor, error_rate_monitors
 
 __ALL_TASKS: set[str] = set()
 __SCHEDULER_TASK_NAME = '__sched__'
@@ -25,7 +24,6 @@ async def start_async_listener(bot: Bot) -> None:
     """Launches all bot listeners, and sends all updates to their handlers.
     Runs asynchronously.
     """
-    error_rate_monitors.set(ErrorRateMonitor(cooldown=60))
     generator = bot.listener_func()
     middlewares = bot._middlewares
     entry = compose_middlewares(bot, middlewares)

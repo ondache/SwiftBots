@@ -7,7 +7,7 @@ from swiftbots.all_types import ExitBotException, RestartListeningException
 from swiftbots.functions import decompose_bot_as_dependencies, resolve_function_args
 from swiftbots.message_handlers import is_user_allowed, search_best_command_match
 from swiftbots.types import CallNextMiddleware, Middleware
-from swiftbots.utils import error_rate_monitors
+from swiftbots.utils import error_rate_monitors, ErrorRateMonitor
 
 if TYPE_CHECKING:
     from swiftbots.bots import Bot, ChatBot, TelegramBot
@@ -37,7 +37,11 @@ async def process_listener_exceptions(
     Too frequent exceptions cause the bot to sleep for some time.
     Used only for listener functions.
     """
-    err_monitor = error_rate_monitors.get()
+    err_monitor = error_rate_monitors.get(None)
+    if err_monitor is None:
+        err_monitor = ErrorRateMonitor(cooldown=60)
+        error_rate_monitors.set(err_monitor)
+
     try:
         await call_next(listen_generator)
     except RestartListeningException:
