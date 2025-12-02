@@ -366,12 +366,12 @@ class TelegramBot(ChatBot):
         for msg in wrap(
                 message,
                 4096,
-                expand_tabs=True,
-                replace_whitespace=True,
+                expand_tabs=False,
+                replace_whitespace=False,
                 fix_sentence_endings=False,
-                break_long_words=True,
-                break_on_hyphens=True,
-                drop_whitespace=True,
+                break_long_words=False,
+                break_on_hyphens=False,
+                drop_whitespace=False,
         ):
             send_data = {"chat_id": user, "text": msg}
             result = await self.fetch_async("sendMessage", send_data)
