@@ -137,7 +137,8 @@ async def route_chat_message(bot: 'ChatBot', deps: dict, call_next: CallNextMidd
 async def deconstruct_telegram_message(bot: 'TelegramBot', update: dict, call_next: CallNextMiddleware) -> dict | None:
     """https://core.telegram.org/bots/api#message
     """
-    update = update["result"][0]
+    if 'result' in update:
+        update = update["result"][0]
     if "message" in update:
         message = update["message"]
         sender = message["from"]["id"]
