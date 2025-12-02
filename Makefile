@@ -21,6 +21,7 @@ build:
 	uv build --quiet
 
 publish:
+	del /q .\dist\*
 	uv sync --quiet
 	uv export -o pylock.toml --quiet --no-dev
 	uv build --quiet
