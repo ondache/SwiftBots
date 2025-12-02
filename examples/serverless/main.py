@@ -60,7 +60,7 @@ async def default_handler(message: str, logger: ILogger, chat: bot.Chat):
 # Configure and run the app
 swiftbots_app = SwiftBots(runner=run_oneshot)
 
-swiftbots_app.add_bots([bot])
+swiftbots_app.add_bot(bot)
 
 # Configure Azure Function App
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
