@@ -488,8 +488,8 @@ class TelegramBot(ChatBot):
             return result[0]["update_id"] + 1
         return -1
 
-    def build(self) -> None:
-        super().build()
+    async def before_start_async(self) -> None:
+        await super().before_close_async()
         self.__http_session = httpx.AsyncClient()
 
     async def before_close_async(self) -> None:
