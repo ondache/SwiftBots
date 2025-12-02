@@ -135,15 +135,16 @@ def run_async(container: AppContainer) -> None:
     asyncio.run(start_async_loop(container))
 
 
-async def run_oneshot_async(container: AppContainer, run_with: dict) -> None:
-    assert len(container.bots) == 1, 'Only one bot is allowed to run oneshot'
-    bot = container.bots[0]
-    message = run_with
-    await bot.before_start_async()
-    entry = compose_middlewares(bot, bot._middlewares)
-    await entry(message)
-    await bot.before_close_async()
+async def run_oneshot_async(container: AppContainer, run_with: dict, timeout: float | None = None) -> None:
+    async with asyncio.timeout(timeout):
+        assert len(container.bots) == 1, 'Only one bot is allowed to run oneshot'
+        bot = container.bots[0]
+        message = run_with
+        await bot.before_start_async()
+        entry = compose_middlewares(bot, bot._middlewares)
+        await entry(message)
+        await bot.before_close_async()
 
 
-def run_oneshot(container: AppContainer, run_with: dict) -> None:
-    asyncio.run(run_oneshot_async(container, run_with))
+def run_oneshot(container: AppContainer, run_with: dict, timeout: float | None = None) -> None:
+    asyncio.run(run_oneshot_async(container, run_with, timeout))
