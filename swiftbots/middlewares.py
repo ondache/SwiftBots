@@ -7,7 +7,11 @@ from swiftbots.all_types import ExitBotException, RestartListeningException
 from swiftbots.functions import decompose_bot_as_dependencies, resolve_function_args
 from swiftbots.message_handlers import is_user_allowed, search_best_command_match
 from swiftbots.types import CallNextMiddleware, Middleware
-from swiftbots.utils import ErrorRateMonitor, error_rate_monitors
+from swiftbots.utils import (
+    CRITICAL_ERROR_STARTUP_THRESHOLD_SECONDS,
+    ErrorRateMonitor,
+    error_rate_monitors,
+)
 
 if TYPE_CHECKING:
     from swiftbots.bots import Bot, ChatBot, TelegramBot
@@ -51,14 +55,13 @@ async def process_listener_exceptions(
             f"Bot {bot.name} was raised with unhandled `{e.__class__.__name__}`"
             f" and kept listening on:\n{e}.\nFull traceback:\n{format_exc()}",
         )
-        if err_monitor.since_start < 3:
+        if err_monitor.since_start < CRITICAL_ERROR_STARTUP_THRESHOLD_SECONDS:
             msg = f"Bot {bot.name} raises immediately after start listening. Stopping the bot."
             raise ExitBotException(msg) from e
-        rate = err_monitor.evoke()
-        if rate > 5:
+        if err_monitor.exceeded_error_rate:
             await bot.logger.error_async(f"Bot {bot.name} sleeps for 30 seconds.")
             await asyncio.sleep(30)
-            err_monitor.error_count = 3
+            err_monitor.reset_error_count()
         return bot.listener_func()
     else:
         return listen_generator
@@ -142,11 +145,7 @@ async def deconstruct_telegram_message(bot: 'TelegramBot', update: dict, call_ne
     if "message" in update:
         message = update["message"]
         sender = message["from"]["id"]
-        username = (
-            message["from"]["username"]
-            if "username" in message["from"]
-            else None
-        )
+        username = message["from"].get("username", None)
         text = ''
         photo = None
         if "text" in message:

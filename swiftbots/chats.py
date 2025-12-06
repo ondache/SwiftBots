@@ -1,5 +1,5 @@
-from textwrap import wrap
 from collections.abc import Callable
+from textwrap import wrap
 
 from swiftbots.all_types import ILogger
 from swiftbots.types import AsyncSenderFunction

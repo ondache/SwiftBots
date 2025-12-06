@@ -1,6 +1,9 @@
 import time
 from contextvars import ContextVar
 
+MAXIMUM_ERROR_RATE = 5
+CRITICAL_ERROR_STARTUP_THRESHOLD_SECONDS = 300
+
 
 class ErrorRateMonitor:
     def __init__(self, cooldown: int = 60):
@@ -21,8 +24,15 @@ class ErrorRateMonitor:
         return self.error_count
 
     @property
+    def exceeded_error_rate(self) -> bool:
+        return self.error_count > MAXIMUM_ERROR_RATE
+
+    @property
     def since_start(self) -> float:
         return time.time() - self.start_time
+
+    def reset_error_count(self, error_count: int = 3) -> None:
+        self.error_count = error_count
 
 
 error_rate_monitors: ContextVar[ErrorRateMonitor]  = ContextVar('error_rate_monitors')

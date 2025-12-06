@@ -33,10 +33,7 @@ def insert_trie(trie: Trie, word: str, command: CompiledChatCommand) -> None:
 
 
 def search_best_command_match(trie: Trie, word: str) -> tuple[CompiledChatCommand | None, re.Match | None]:
-    if FINAL_INDICATOR in trie:
-        matches = [trie[FINAL_INDICATOR]]
-    else:
-        matches = []
+    matches = [trie[FINAL_INDICATOR]] if FINAL_INDICATOR in trie else []
     sub_word = word
     while trie is not None:
         trie = search_ext.search_trie(trie, sub_word.lower())

@@ -13,26 +13,19 @@ ignore = [
     "ANN003", # annotate **kwargs ...
     "Q000", # single quota demand
     "ANN401", # type hint Any
-    "BLE001", # too bload exceptions
+    "BLE001", # too broad exceptions
+    "PLR0913", # too many arguments
+    "FBT001", "FBT002", # too strict, positional booleans
+    "FIX002", # asserts todos
 
     # todo
-    "LOG",
-    "B024",
-    "C901",
-    # todo check
-    "D",
-    "PT",
-    "FIX",
-    "S",
-    "TD",
-    "FBT",
-    "SLF",
-    "BLE",
-    "RUF",
-    "SIM",
-    "DTZ",
-    "PLW",
-    "PLR",
+    "LOG", # use logger instance
+    "B024", # abstract ILogger, ITrigger
+    "C901", "PLR0915", "PLR0912", # too complex start_async_loop
+    "PLW0603", # __ALL_TASKS
+    "SLF001", # protected member accessed
+    "D", # docstrings
+    "S", # asserts
 ]
 
 [format]

@@ -9,7 +9,9 @@ class PeriodTrigger(IPeriodTrigger):
                  minutes: float = 0,
                  seconds: int = 0,
                  ):
-        assert hours >= 0 and minutes >= 0 and seconds >= 0, 'Time for scheduler must be positive or zero'
+        if hours < 0 or minutes < 0 or seconds < 0:
+            msg = 'Time for scheduler must be positive or zero'
+            raise ValueError(msg)
         self.__period = timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
     def get_period(self) -> timedelta:

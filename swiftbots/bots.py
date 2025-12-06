@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator, Callable
+from http import HTTPStatus
 from textwrap import wrap
 from traceback import format_exc
 from typing import Any, TypeVar
@@ -40,6 +41,8 @@ from swiftbots.middlewares import (
 )
 from swiftbots.tasks.tasks import TaskInfo
 from swiftbots.types import AsyncListenerFunction, AsyncSenderFunction, DecoratedCallable, Middleware
+
+HTTPStatus_FLOOD = HTTPStatus(420)
 
 
 class Bot:
@@ -111,8 +114,7 @@ class Bot:
         """Mark a bot method as a task.
         Will be executed by SwiftBots automatically.
         """
-        assert isinstance(triggers, ITrigger) or isinstance(triggers, list), \
-            'Trigger must be the type of ITrigger or a list of ITriggers'
+        assert isinstance(triggers, (ITrigger, list)), 'Trigger must be the type of ITrigger or a list of ITriggers'
 
         if isinstance(triggers, list):
             for trigger in triggers:
@@ -318,7 +320,7 @@ class TelegramBot(ChatBot):
     __token: str
     __http_session: httpx.AsyncClient
     __first_time_launched = True
-    ALLOWED_UPDATES = ["messages"]
+    ALLOWED_UPDATES: list[str]
 
     def __init__(self,
                  token: str,
@@ -346,6 +348,7 @@ class TelegramBot(ChatBot):
         self._sender_func = self._send_async
         self.__should_skip_old_updates = skip_old_updates
         self.listener_func = self.telegram_listener
+        self.ALLOWED_UPDATES = ["messages"]
 
     def _make_chat(self, deps: dict) -> TelegramChat:
         return TelegramChat(
@@ -465,21 +468,27 @@ class TelegramBot(ChatBot):
         error_msg: str = error["description"]
         msg = f"Error {error_code} from TG API: {error_msg}"
         # notify administrator and repeat request
-        if error_code in (400, 403, 404, 406, 303) or 500 <= error_code <= 599:
+        if error_code in (
+                HTTPStatus.BAD_REQUEST,
+                HTTPStatus.FORBIDDEN,
+                HTTPStatus.NOT_FOUND,
+                HTTPStatus.NOT_ACCEPTABLE,
+                HTTPStatus.SEE_OTHER,
+        ) or HTTPStatus(error_code).is_server_error:
             await self.logger.error_async(msg)
             return 1
         # too many requests (flood)
-        if error_code == 420:
+        if error_code == HTTPStatus_FLOOD:
             await self.logger.error_async(
                 f"{self.name} reached Flood error. Fix the code",
             )
             await asyncio.sleep(10)
             return 0
         # unauthorized
-        if error_code == 401:
+        if error_code == HTTPStatus.UNAUTHORIZED:
             await self.logger.critical_async(msg)
             raise ExitBotException
-        if error_code == 409:
+        if error_code == HTTPStatus.CONFLICT:
             msg = (
                 "Error code 409. Another telegram instance is working. "
                 "Shutting down this instance"

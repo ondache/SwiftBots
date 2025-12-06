@@ -66,7 +66,7 @@ async def start_async_loop(app_container: AppContainer) -> None:
             for bot_to_close in bots:
                 await bot_to_close.before_close_async()
             sys.exit(1)
-        done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+        done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         for task in done:
             name = task.get_name()
             logger = bots_dict[name].logger if name != __SCHEDULER_TASK_NAME else app_container.logger

@@ -12,7 +12,7 @@ from swiftbots.tasks.tasks import TaskInfo
 
 
 def now() -> datetime.datetime:
-    return datetime.datetime.now()
+    return datetime.datetime.now(tz=datetime.timezone.utc)
 
 
 class TaskContainer:
@@ -40,9 +40,8 @@ class TaskContainer:
         left_point = self.__last_called if self.__last_called else self.start_point
 
         for trigger in self.triggers:
-            if isinstance(trigger, IPeriodTrigger):
-                if now() - left_point >= trigger.get_period():
-                    return True
+            if isinstance(trigger, IPeriodTrigger) and now() - left_point >= trigger.get_period():
+                return True
         return False
 
 
@@ -83,8 +82,9 @@ class SimpleScheduler(IScheduler):
 
     async def __run_pending_tasks(self) -> None:
         for task in self.__find_tasks_to_run():
-            # TODO: a temporary solution. Had better launch with `create_task`,
+            # TODO(ondache): a temporary solution. Had better launch with `create_task`,
             #  but then class must supervise these tasks
+            # 003
             task.set_called()
             await task.caller()
             await asyncio.sleep(0)
