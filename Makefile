@@ -16,13 +16,16 @@ check:
 	uv run mypy --no-pretty
 
 build:
+	if exist .\dist del /q .\dist\*
+	uv version --bump patch --quiet
 	uv sync --quiet
 	uv export -o pylock.toml --quiet --no-dev
 	uv build --quiet
 
 publish:
-	del /q .\dist\*
+	if exist .\dist del /q .\dist\*
+	uv version --bump patch --quiet
 	uv sync --quiet
 	uv export -o pylock.toml --quiet --no-dev
 	uv build --quiet
-	uv run twine upload .\dist\*
+	uv publish
