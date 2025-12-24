@@ -12,3 +12,7 @@ class ExitBotException(BaseException):
 
 class RestartListeningException(BaseException):
     pass
+
+
+class TelegramError(Exception):
+    pass

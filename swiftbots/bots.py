@@ -13,7 +13,7 @@ from swiftbots.all_types import (
     ILoggerFactory,
     IScheduler,
     ITrigger,
-    RestartListeningException,
+    TelegramError,
 )
 from swiftbots.chats import Chat, TelegramChat
 from swiftbots.functions import (
@@ -42,7 +42,7 @@ from swiftbots.middlewares import (
 from swiftbots.tasks.tasks import TaskInfo
 from swiftbots.types import AsyncListenerFunction, AsyncSenderFunction, DecoratedCallable, Middleware
 
-HTTPStatus_FLOOD = HTTPStatus(420)
+HTTPStatus_FLOOD = 420
 
 
 class Bot:
@@ -402,7 +402,8 @@ class TelegramBot(ChatBot):
                 )
                 answer = response.json()
             if not answer["ok"]:
-                raise RestartListeningException
+                msg = f'{answer["error_code"]} \'{answer["description"]}\''
+                raise TelegramError(msg)
         return answer
 
     async def telegram_listener(self) -> AsyncGenerator[dict, None]:
